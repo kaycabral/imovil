@@ -1,0 +1,43 @@
+# Cloud Build: build the tekoa image (Next standalone) and push to AR.
+# Triggered from the GitLab `deploy:tekoa` job. Context = repo root.
+# Uses the shared docker/cloudrun.Dockerfile (parameterized by APP_SCOPE/APP_PATH).
+#
+# NEXT_PUBLIC_* are public Firebase web config (project cbrl-tekoa-production)
+# baked into the client bundle at build time. Guarded values pulled from Secret
+# Manager: the Firebase API key and the MapTiler key (same secrets App Hosting used).
+#
+# Substitutions: _IMAGE (full AR tag), _SITE_URL (the public site URL).
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    secretEnv: ['API_KEY', 'MAPTILER_KEY']
+    args:
+      - -c
+      - |
+        docker build -f docker/cloudrun.Dockerfile \
+          --build-arg APP_SCOPE=@tekoa/web \
+          --build-arg APP_PATH=apps/tekoa \
+          --build-arg NEXT_PUBLIC_FIREBASE_API_KEY="$$API_KEY" \
+          --build-arg NEXT_PUBLIC_MAPTILER_API_KEY="$$MAPTILER_KEY" \
+          --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=cbrl-tekoa-production.firebaseapp.com \
+          --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=cbrl-tekoa-production \
+          --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=1:732300416333:web:7efbc57a13f9fa0cdf5304 \
+          --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=cbrl-tekoa-production.firebasestorage.app \
+          --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=732300416333 \
+          --build-arg NEXT_PUBLIC_SITE_URL="${_SITE_URL}" \
+          -t "${_IMAGE}" .
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', '${_IMAGE}']
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/cbrl-tekoa-production/secrets/NEXT_PUBLIC_FIREBASE_API_KEY/versions/latest
+      env: API_KEY
+    - versionName: projects/cbrl-tekoa-production/secrets/NEXT_PUBLIC_MAPTILER_API_KEY/versions/latest
+      env: MAPTILER_KEY
+
+images:
+  - '${_IMAGE}'
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,91 @@
+import { Container } from '@/components/container'
+import { getAdminDb } from '@/lib/firebase/admin'
+import { getServerUser } from '@/lib/firebase/server'
+import { getPropertyById } from '@/lib/properties/server'
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { PageHeader } from '../../../_components/page-header'
+import {
+  PropertyForm,
+  type PropertyFormInitial,
+  type PropertyFormProfile,
+} from '../../_components/property-form'
+
+export const metadata: Metadata = {
+  title: 'Editar imóvel — Tekoa',
+}
+
+type PageProps = { params: Promise<{ id: string }> }
+
+function formatPostalCodeDisplay(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8)
+  if (digits.length <= 5) return digits
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`
+}
+
+export default async function EditPropertyPage({ params }: PageProps) {
+  const { id } = await params
+  const user = await getServerUser()
+  if (!user) notFound()
+
+  const property = await getPropertyById(id)
+  if (!property) notFound()
+  if (property.ownerUid !== user.uid) notFound()
+
+  const profileSnap = await getAdminDb().collection('users').doc(user.uid).get()
+  const profileData = profileSnap.data() as { phone?: string; creci?: string } | undefined
+  const profile: PropertyFormProfile = {
+    uid: user.uid,
+    phone: profileData?.phone ?? null,
+    creci: profileData?.creci ?? null,
+  }
+
+  const initial: PropertyFormInitial = {
+    values: {
+      kind: property.kind,
+      deal: property.deal,
+      title: property.title,
+      subtitle: property.subtitle,
+      postalCode: property.postalCode,
+      street: property.street,
+      neighborhood: property.neighborhood,
+      state: property.state,
+      city: property.city,
+      price: property.price,
+      condo: property.condo,
+      iptu: property.iptu,
+      area: property.area,
+      rooms: property.rooms,
+      suites: property.suites,
+      parking: property.parking,
+      floor: property.floor,
+      petFriendly: property.petFriendly,
+      furnished: property.furnished,
+      transitDistanceMin: property.transitDistanceMin,
+      transitLabel: property.transitLabel,
+      builtYear: property.builtYear,
+      descriptionText: property.description.join('\n\n'),
+    },
+    images: property.images,
+    postalCodeInput: formatPostalCodeDisplay(property.postalCode),
+    postalCodeResult: property.postalCode
+      ? {
+          postalCode: property.postalCode,
+          state: property.state,
+          city: property.city,
+          neighborhood: property.neighborhood,
+          street: property.street,
+        }
+      : null,
+  }
+
+  return (
+    <Container className="p-5 md:p-8">
+      <PageHeader
+        title="Editar imóvel"
+        description="Atualize os dados e salve para refletir nos anúncios."
+      />
+      <PropertyForm profile={profile} mode="edit" propertyId={property.id} initial={initial} />
+    </Container>
+  )
+}

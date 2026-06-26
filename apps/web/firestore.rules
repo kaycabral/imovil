@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Changelog is written exclusively by the deploy workflow via Admin SDK
+    // (which bypasses rules) and read by the /novidades server component
+    // (also Admin SDK). No client-side access needed; deny everything.
+    match /changelog/{tagName} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create, delete: if false;
+    }
+
+    match /properties/{propertyId} {
+      // PUBLIC READ INTENCIONAL: tekoa é catálogo público de imóveis listados
+      // por brokers. Endereço, preço e descrição são publicados explicitamente
+      // pelo broker — equivalente a anúncio em portal imobiliário.
+      // PII sensível do broker (telefone, CRECI) está em /users e exige auth.
+      // Reavaliar se: adicionar campo PII do proprietário (CPF, contato direto)
+      // — mover pra subcoleção privada ou esconder atrás de auth.
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.ownerUid
+        && isValidPropertyCreate(request.resource.data);
+
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.ownerUid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.ownerUid;
+    }
+  }
+
+  function isValidPropertyCreate(d) {
+    return d.slug is string && d.slug.size() > 0
+      && d.kind in ['apartment', 'studio', 'kitnet', 'house']
+      && d.deal in ['rental', 'sale']
+      && d.status in ['published', 'draft', 'paused']
+      && d.title is string && d.title.size() >= 3
+      && d.postalCode is string && d.postalCode.size() == 8
+      && d.neighborhood is string && d.neighborhood.size() > 0
+      && d.city is string && d.city.size() > 0
+      && d.state is string && d.state.size() == 2
+      && d.price is int && d.price > 0
+      && d.area is int && d.area > 0
+      && d.rooms is int && d.rooms >= 0
+      && d.images is list && d.images.size() >= 1;
+  }
+}

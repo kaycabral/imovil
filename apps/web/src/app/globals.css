@@ -1,0 +1,18 @@
+@import '@cbrl/design/globals.css';
+@plugin '@tailwindcss/typography';
+
+@theme inline {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
+}

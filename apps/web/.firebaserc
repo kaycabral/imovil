@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "cbrl-tekoa-staging-2",
+    "staging": "cbrl-tekoa-staging-2",
+    "production": "cbrl-tekoa-production"
+  }
+}

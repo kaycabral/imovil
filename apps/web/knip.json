@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["eslint.config.mjs"],
+  "ignoreDependencies": ["eslint-config-next"],
+  "ignoreBinaries": ["eslint", "type-coverage"],
+  "ignore": ["**/_smoke/**"],
+  "playwright": {
+    "config": ["playwright.config.ts"]
+  },
+  "rules": {
+    "exports": "off",
+    "types": "off",
+    "nsExports": "off",
+    "nsTypes": "off",
+    "enumMembers": "off",
+    "duplicates": "off"
+  }
+}
