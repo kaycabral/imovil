@@ -3,6 +3,7 @@ import { BrandLink } from '@/components/brand-link'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
+import { readBackend } from '@/lib/backend-read'
 import { getAdminDb, type Timestamp } from '@imovil/db'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -27,11 +28,13 @@ type Release = {
 async function getReleases(): Promise<Release[]> {
   // During the production build there are no runtime credentials/project, so the
   // Admin SDK would hang reaching Firestore and time out the static export (it
-  // hangs rather than throwing, so the catch below never fires). Skip the read at
+  // hangs rather than throwing, so only the read timeout would end it). Skip the read at
   // build time; ISR (`revalidate`) populates the page on the first runtime request,
   // where the Cloud Run service account has Firestore access.
   if (process.env.NEXT_PHASE === 'phase-production-build') return []
-  try {
+  // Firestore unavailable (env not configured, project down, emulator off) —
+  // fall back to empty so the page still renders instead of 500-ing or hanging.
+  const result = await readBackend('changelog', async () => {
     const snap = await getAdminDb()
       .collection('changelog')
       .orderBy('publishedAt', 'desc')
@@ -51,11 +54,8 @@ async function getReleases(): Promise<Release[]> {
         publishedAt: data.publishedAt ? data.publishedAt.toDate().toISOString() : null,
       }
     })
-  } catch {
-    // Firestore unavailable (env not configured, project down) — fall back to
-    // empty so the page still renders instead of 500-ing.
-    return []
-  }
+  })
+  return result.ok ? result.data : []
 }
 
 // Pull only the "## Novidades" section (discarding the technical <details>).

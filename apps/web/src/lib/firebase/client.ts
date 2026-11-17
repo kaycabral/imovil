@@ -13,6 +13,15 @@ const config = {
 
 const useEmulators = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true'
 
+/**
+ * False when the public Firebase web config is absent (e.g. running the front
+ * without any backend env). `getAuth` throws `auth/invalid-api-key` in that
+ * case, so callers check this first and render the signed-out UI instead.
+ */
+export function isClientFirebaseConfigured(): boolean {
+  return Boolean(config.apiKey && config.projectId)
+}
+
 let authEmulatorWired = false
 let firestoreEmulatorWired = false
 let storageEmulatorWired = false
