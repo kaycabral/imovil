@@ -1,11 +1,15 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { updateSession } from '@/lib/supabase/proxy'
+import type { NextRequest } from 'next/server'
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', request.nextUrl.pathname + request.nextUrl.search)
-  return NextResponse.next({ request: { headers: requestHeaders } })
+  return updateSession(request, requestHeaders)
 }
 
 export const config = {
-  matcher: '/painel/:path*',
+  // Every page and route handler (session refresh), skipping static assets.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)',
+  ],
 }

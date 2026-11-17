@@ -7,7 +7,7 @@ export const E2E_PORT = 3003
 export const BASE_URL = `http://127.0.0.1:${E2E_PORT}`
 
 // The broker account is created per parallel worker in `fixtures.ts`
-// (`e2ebroker-w<workerIndex>`); only the shared display name lives here.
+// (`broker-w<workerIndex>@e2e.test`); only the shared display name lives here.
 export const BROKER_DISPLAY_NAME = 'Broker E2E'
 
 // Resolves from apps/imovil/ (Playwright's cwd when invoked via `pnpm test:e2e`).

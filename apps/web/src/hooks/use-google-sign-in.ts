@@ -1,54 +1,51 @@
 'use client'
 
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
-import type { Route } from 'next'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { getClientAuth, isClientFirebaseConfigured } from '@/lib/firebase/client'
+import { safeNext } from '@/lib/safe-next'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
-function safeNext(raw: string | null): string | null {
-  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return null
-  return raw
+const AUTH_PARAMS = ['login', 'login_error', 'next']
+
+/** Current path + query without the auth flags, so sign-in returns to the same page. */
+function currentPath(pathname: string, searchParams: URLSearchParams): string {
+  const params = new URLSearchParams(searchParams.toString())
+  for (const key of AUTH_PARAMS) params.delete(key)
+  const qs = params.toString()
+  return qs ? `${pathname}?${qs}` : pathname
 }
 
+/**
+ * Google sign-in through Supabase Auth (OAuth + PKCE). Redirects the whole page
+ * to Google and back through `/auth/callback`, which sets the session cookie and
+ * lands on the `next` param (same-origin) or the page the user was on.
+ */
 export function useGoogleSignIn() {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   async function signIn() {
     if (loading) return
-    if (!isClientFirebaseConfigured()) {
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) {
       toast.error('Login indisponível no momento. Tenta de novo mais tarde.')
       return
     }
     setLoading(true)
-    try {
-      const result = await signInWithPopup(getClientAuth(), new GoogleAuthProvider())
-      const idToken = await result.user.getIdToken()
-      const res = await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      })
-      if (!res.ok) {
-        const body = await res.text().catch(() => '')
-        throw new Error(`Failed to create session: status=${res.status} body=${body}`)
-      }
-      const next = safeNext(searchParams.get('next'))
-      if (next) {
-        router.push(next as Route)
-      } else {
-        router.refresh()
-      }
-      // Don't reset `loading` on success — the navigation/refresh re-renders
-      // the caller, which will switch to the authenticated UI via useUser.
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Sign-in failed')
+    const next = safeNext(searchParams.get('next')) ?? currentPath(pathname, searchParams)
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    })
+    if (error) {
+      toast.error('Não foi possível entrar com o Google. Tenta de novo.')
       setLoading(false)
     }
+    // On success the browser is already navigating to Google; keep `loading`.
   }
 
   return { signIn, loading }

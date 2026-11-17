@@ -1,17 +1,25 @@
-// Dev seed for the local emulator: a handful of published properties so
-// /imoveis has real content for manual testing (data is wiped on emulator
-// stop). Mirrors the scheduling seed convention (idempotent + additive, run via
-// `pnpm db:seed` while `pnpm db:start` is up). Clears this seed's own
-// properties first, then re-creates a fixed set; never touches other owners.
+// Dev seed for the LOCAL Supabase stack: a broker with a password login and a
+// handful of published properties so /imoveis has real content for manual
+// testing. Recreates its own user (cascading away its previous properties) on
+// every run; never touches other owners. Reads URL/keys/database from
+// `supabase status`, so it can only ever target the local stack.
 
-import { getAdminAuth, getAdminDb } from '@imovil/db'
+import { closeImovilDb } from '@imovil/db'
 import type { PropertyCreateInput } from '@imovil/shared'
 
-import { seedProfile, seedProperty } from '../e2e/seed'
+import { readLocalSupabase } from '../e2e/local-supabase'
+import { recreateAuthUser, seedProfile, seedProperty } from '../e2e/seed'
+
+const local = readLocalSupabase()
+Object.assign(process.env, {
+  NEXT_PUBLIC_SUPABASE_URL: local.apiUrl,
+  SUPABASE_SECRET_KEY: local.secretKey,
+  POSTGRES_URL: local.dbUrl,
+})
 
 const OWNER = {
-  uid: 'dev-seed-broker',
   email: 'corretor.dev@imovil.local',
+  password: 'imovil-dev-password',
   displayName: 'Corretor Dev',
 }
 const PORT = 3003
@@ -81,51 +89,9 @@ const LISTINGS: Listing[] = [
   },
 ]
 
-async function clearSeedProperties(): Promise<number> {
-  const db = getAdminDb()
-  const snap = await db.collection('properties').where('ownerUid', '==', OWNER.uid).get()
-  await Promise.all(snap.docs.map((d) => d.ref.delete()))
-  return snap.size
-}
-
-// Create a Google-provider account in the Auth emulator so "Entrar → Continuar
-// com Google" lets you pick this broker. Idempotent (skips if already present).
-async function ensureOwnerAuth(): Promise<void> {
-  const auth = getAdminAuth()
-  try {
-    await auth.getUser(OWNER.uid)
-    return
-  } catch (err: unknown) {
-    const code = err && typeof err === 'object' && 'code' in err ? err.code : undefined
-    if (code !== 'auth/user-not-found') throw err
-  }
-  const result = await auth.importUsers([
-    {
-      uid: OWNER.uid,
-      email: OWNER.email,
-      emailVerified: true,
-      displayName: OWNER.displayName,
-      providerData: [
-        {
-          uid: OWNER.email,
-          providerId: 'google.com',
-          email: OWNER.email,
-          displayName: OWNER.displayName,
-        },
-      ],
-    },
-  ])
-  if (result.failureCount > 0) {
-    throw new Error(`importUsers failed: ${result.errors.map((e) => e.error.message).join('; ')}`)
-  }
-}
-
 async function seed(): Promise<void> {
-  const removed = await clearSeedProperties()
-  if (removed > 0) console.log(`Cleared ${removed} existing seed properties.`)
-
-  await ensureOwnerAuth()
-  await seedProfile(OWNER.uid, { displayName: OWNER.displayName, creci: 'CRECI-DEV-001' })
+  const ownerId = await recreateAuthUser(OWNER)
+  await seedProfile(ownerId, { creci: 'CRECI-DEV-001' })
 
   for (const [i, listing] of LISTINGS.entries()) {
     const images = [
@@ -136,7 +102,7 @@ async function seed(): Promise<void> {
       },
     ]
     const { slug } = await seedProperty({
-      ownerUid: OWNER.uid,
+      ownerId,
       status: 'published',
       overrides: { ...listing, images },
     })
@@ -146,24 +112,30 @@ async function seed(): Promise<void> {
   }
 }
 
-seed()
-  .then(() => {
+async function main(): Promise<void> {
+  try {
+    await seed()
     const line = '─'.repeat(64)
     console.log(`\n${line}`)
     console.log('✅ Seed concluído — Imovil')
     console.log(line)
-    console.log(`  Listagem:     http://127.0.0.1:${PORT}/imoveis`)
+    console.log(`  Listagem:     http://localhost:${PORT}/imoveis`)
     console.log(`  ${LISTINGS.length} imóveis publicados (apartment · house · studio · kitnet)`)
-    console.log('  Variados por bairro, quartos e faixa de preço — bons pros filtros.')
     console.log(line)
-    console.log(`  Entrar:       http://127.0.0.1:${PORT}  → "Entrar" → "Continuar com Google"`)
-    console.log(`                → escolha "${OWNER.displayName}" (${OWNER.email})`)
-    console.log(`  Painel:       http://127.0.0.1:${PORT}/painel  (após login)`)
+    console.log('  Login local (Google não roda sem OAuth client): com ENABLE_TEST_AUTH=true')
+    console.log('  no .env.local, rode no console do navegador em localhost:3003:')
+    console.log(
+      `    await fetch('/api/e2e-signin', { method: 'POST', body: JSON.stringify({ email: '${OWNER.email}', password: '${OWNER.password}' }) })`,
+    )
+    console.log(`  Studio:       ${local.apiUrl.replace('54321', '54323')}`)
     console.log(`${line}\n`)
-    process.exit(0)
-  })
-  .catch((err: unknown) => {
+  } catch (err) {
     console.error('\n❌ Seed falhou:', err)
-    console.error('\nO emulator está rodando? Suba com `pnpm db:start` antes.\n')
-    process.exit(1)
-  })
+    console.error('\nO stack local está rodando? Suba com `pnpm db:start` antes.\n')
+    process.exitCode = 1
+  } finally {
+    await closeImovilDb()
+  }
+}
+
+void main()

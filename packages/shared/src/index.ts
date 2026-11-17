@@ -8,7 +8,6 @@ export {
   propertyStatusSchema,
   type PropertyCreateInput,
 } from './schemas/property'
-export type { Profile } from './types/profile'
 export { propertyKindLabels } from './types/property'
 export type {
   Property,

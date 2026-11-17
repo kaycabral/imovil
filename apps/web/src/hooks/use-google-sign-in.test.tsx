@@ -1,151 +1,124 @@
-import { renderHook, waitFor } from '@testing-library/react'
-import { signInWithPopup, type User, type UserCredential } from 'firebase/auth'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useGoogleSignIn } from './use-google-sign-in'
 
-// Factory: produz User completo, type-safe, sem cast.
-function createMockUser(overrides: Partial<User> = {}): User {
-  return {
-    uid: 'mock-uid',
-    email: 'mock@example.com',
-    emailVerified: true,
-    displayName: 'Mock User',
-    photoURL: null,
-    phoneNumber: null,
-    providerId: 'firebase',
-    isAnonymous: false,
-    metadata: { creationTime: '', lastSignInTime: '' },
-    providerData: [],
-    refreshToken: '',
-    tenantId: null,
-    delete: vi.fn().mockResolvedValue(undefined),
-    getIdToken: vi.fn().mockResolvedValue('id-token'),
-    getIdTokenResult: vi.fn().mockResolvedValue({
-      token: 'id-token',
-      expirationTime: '',
-      authTime: '',
-      issuedAtTime: '',
-      signInProvider: null,
-      signInSecondFactor: null,
-      claims: {},
-    }),
-    reload: vi.fn().mockResolvedValue(undefined),
-    toJSON: vi.fn().mockReturnValue({}),
-    ...overrides,
-  }
-}
+type OAuthOptions = { provider: 'google'; options: { redirectTo: string } }
+type OAuthResult = { error: { message: string } | null }
 
-function createMockUserCredential(overrides: Partial<UserCredential> = {}): UserCredential {
-  return {
-    user: createMockUser(),
-    providerId: 'google.com',
-    operationType: 'signIn',
-    ...overrides,
-  }
-}
-
-const routerPush = vi.fn()
-const routerRefresh = vi.fn()
+let pathname = '/imoveis'
 let searchParams = new URLSearchParams()
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: routerPush, refresh: routerRefresh }),
+  usePathname: () => pathname,
   useSearchParams: () => searchParams,
 }))
 
-vi.mock('firebase/auth', () => ({
-  GoogleAuthProvider: vi.fn(),
-  signInWithPopup: vi.fn(),
+const signInWithOAuth = vi.fn<(options: OAuthOptions) => Promise<OAuthResult>>()
+let clientConfigured = true
+
+vi.mock('@/lib/supabase/client', () => ({
+  getSupabaseBrowserClient: () =>
+    clientConfigured
+      ? { auth: { signInWithOAuth: (options: OAuthOptions) => signInWithOAuth(options) } }
+      : null,
 }))
 
-let firebaseConfigured = true
-
-vi.mock('@/lib/firebase/client', () => ({
-  getClientAuth: () => ({}),
-  isClientFirebaseConfigured: () => firebaseConfigured,
-}))
-
-const toastError = vi.fn()
+const toastError = vi.fn<(message: string) => void>()
 vi.mock('sonner', () => ({
   toast: {
-    error: (...args: unknown[]) => {
-      toastError(...args)
+    error: (message: string) => {
+      toastError(message)
     },
     success: vi.fn(),
   },
 }))
 
+function expectedRedirect(next: string): string {
+  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+}
+
+async function signInAndGetRedirect(): Promise<string> {
+  const { result } = renderHook(() => useGoogleSignIn())
+  await act(() => result.current.signIn())
+  expect(signInWithOAuth).toHaveBeenCalledTimes(1)
+  const [call] = signInWithOAuth.mock.calls[0]!
+  expect(call.provider).toBe('google')
+  return call.options.redirectTo
+}
+
 describe('useGoogleSignIn', () => {
+  beforeEach(() => {
+    signInWithOAuth.mockResolvedValue({ error: null })
+  })
+
   afterEach(() => {
-    vi.clearAllMocks()
-    vi.unstubAllGlobals()
+    vi.resetAllMocks()
+    pathname = '/imoveis'
     searchParams = new URLSearchParams()
-    firebaseConfigured = true
+    clientConfigured = true
   })
 
-  it('does not open the popup when Firebase is not configured', async () => {
-    firebaseConfigured = false
+  it('does not start OAuth when Supabase is not configured', async () => {
+    clientConfigured = false
 
     const { result } = renderHook(() => useGoogleSignIn())
-    await result.current.signIn()
+    await act(() => result.current.signIn())
 
-    expect(signInWithPopup).not.toHaveBeenCalled()
+    expect(signInWithOAuth).not.toHaveBeenCalled()
     expect(toastError).toHaveBeenCalledWith(expect.stringContaining('Login indisponível'))
+    expect(result.current.loading).toBe(false)
   })
 
-  it('refreshes the router when no next param is set', async () => {
-    vi.mocked(signInWithPopup).mockResolvedValue(createMockUserCredential())
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
+  it('returns to the safe next param through /auth/callback', async () => {
+    searchParams = new URLSearchParams({ next: '/painel/imoveis?status=draft' })
 
-    const { result } = renderHook(() => useGoogleSignIn())
-    await result.current.signIn()
-
-    await waitFor(() => expect(routerRefresh).toHaveBeenCalled())
-    expect(routerPush).not.toHaveBeenCalled()
-  })
-
-  it('navigates to next when present and safe', async () => {
-    searchParams = new URLSearchParams({ next: '/painel' })
-    vi.mocked(signInWithPopup).mockResolvedValue(createMockUserCredential())
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
-
-    const { result } = renderHook(() => useGoogleSignIn())
-    await result.current.signIn()
-
-    await waitFor(() => expect(routerPush).toHaveBeenCalledWith('/painel'))
-    expect(routerRefresh).not.toHaveBeenCalled()
-  })
-
-  it('rejects unsafe next params (external or protocol-relative)', async () => {
-    searchParams = new URLSearchParams({ next: '//evil.example.com' })
-    vi.mocked(signInWithPopup).mockResolvedValue(createMockUserCredential())
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
-
-    const { result } = renderHook(() => useGoogleSignIn())
-    await result.current.signIn()
-
-    await waitFor(() => expect(routerRefresh).toHaveBeenCalled())
-    expect(routerPush).not.toHaveBeenCalled()
-  })
-
-  it('surfaces status and body when /api/auth/session returns non-ok', async () => {
-    vi.mocked(signInWithPopup).mockResolvedValue(createMockUserCredential())
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 502,
-        text: () => Promise.resolve('upstream down'),
-      }),
+    await expect(signInAndGetRedirect()).resolves.toBe(
+      expectedRedirect('/painel/imoveis?status=draft'),
     )
+  })
+
+  it('falls back to the current path without the auth params', async () => {
+    pathname = '/imoveis'
+    searchParams = new URLSearchParams({ login: '1', login_error: '1', deal: 'sale', page: '2' })
+
+    await expect(signInAndGetRedirect()).resolves.toBe(
+      expectedRedirect('/imoveis?deal=sale&page=2'),
+    )
+  })
+
+  it('uses the bare pathname when only auth params are present', async () => {
+    pathname = '/novidades'
+    searchParams = new URLSearchParams({ login: '1' })
+
+    await expect(signInAndGetRedirect()).resolves.toBe(expectedRedirect('/novidades'))
+  })
+
+  it('rejects unsafe next params (protocol-relative) and falls back to the current path', async () => {
+    pathname = '/imoveis'
+    searchParams = new URLSearchParams({ next: '//evil.example.com', deal: 'rental' })
+
+    await expect(signInAndGetRedirect()).resolves.toBe(expectedRedirect('/imoveis?deal=rental'))
+  })
+
+  it('keeps loading after a successful start and ignores repeated clicks', async () => {
+    const { result } = renderHook(() => useGoogleSignIn())
+    await act(() => result.current.signIn())
+
+    await waitFor(() => expect(result.current.loading).toBe(true))
+    await act(() => result.current.signIn())
+
+    expect(signInWithOAuth).toHaveBeenCalledTimes(1)
+    expect(toastError).not.toHaveBeenCalled()
+  })
+
+  it('toasts and resets loading when signInWithOAuth returns an error', async () => {
+    signInWithOAuth.mockResolvedValue({ error: { message: 'provider disabled' } })
 
     const { result } = renderHook(() => useGoogleSignIn())
-    await result.current.signIn()
+    await act(() => result.current.signIn())
 
-    await waitFor(() =>
-      expect(toastError).toHaveBeenCalledWith(expect.stringContaining('status=502')),
-    )
-    expect(toastError).toHaveBeenCalledWith(expect.stringContaining('upstream down'))
+    expect(toastError).toHaveBeenCalledWith('Não foi possível entrar com o Google. Tenta de novo.')
+    expect(result.current.loading).toBe(false)
   })
 })

@@ -1,3 +1,4 @@
+import { waitForGoogleSignIn } from '@e2e/auth'
 import { expect, test } from '@e2e/fixtures'
 
 test.use({ authAsBroker: true })
@@ -25,9 +26,10 @@ test.describe('mobile sheet', () => {
 
     await expect(page).toHaveURL(/\/imoveis(\?|$)/)
 
-    // Cookie + IndexedDB cleared — hitting /painel should redirect to login.
+    // Session cookie cleared — hitting /painel should start the sign-in again.
+    const signIn = waitForGoogleSignIn(page)
     await page.goto('/painel')
-    await expect(page).toHaveURL(/\/imoveis\?login=1/)
+    await expect(signIn).resolves.toEqual({ callbackPath: '/auth/callback', next: '/painel' })
   })
 })
 

@@ -1,7 +1,7 @@
 import { TEST_IMAGE } from '@e2e/constants'
 import { expect, test } from '@e2e/fixtures'
 import { mockBrasilApi } from '@e2e/mocks'
-import { getAdminDb } from '@imovil/db'
+import { listProperties } from '@e2e/seed'
 
 test.use({ authAsBroker: true })
 
@@ -52,14 +52,10 @@ test('broker creates a new property as draft via the form', async ({ page, broke
   // picks the one that's actually shown and avoids strict-mode duplicates.
   await expect(page.getByText(title).filter({ visible: true })).toBeVisible()
 
-  // Sanity check no Firestore — garante que o doc foi criado pelo owner certo como draft.
-  const snap = await getAdminDb()
-    .collection('properties')
-    .where('ownerUid', '==', broker.uid)
-    .where('title', '==', title)
-    .get()
-  expect(snap.size).toBe(1)
-  const data = snap.docs[0]!.data()
+  // Sanity check no banco — garante que o imóvel foi criado pelo owner certo como draft.
+  const created = (await listProperties({ ownerId: broker.id })).filter((p) => p.title === title)
+  expect(created).toHaveLength(1)
+  const data = created[0]!
   expect(data.status).toBe('draft')
   expect(data.price).toBe(200000)
 })

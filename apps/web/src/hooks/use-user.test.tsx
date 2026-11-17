@@ -1,45 +1,100 @@
-import { renderHook, waitFor } from '@testing-library/react'
-import { onAuthStateChanged } from 'firebase/auth'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { act, renderHook } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useUser } from './use-user'
 
-let firebaseConfigured = true
+type FakeSession = {
+  user: { id: string; email?: string; user_metadata: Record<string, unknown> }
+}
+type AuthListener = (event: string, session: FakeSession | null) => void
 
-vi.mock('@/lib/firebase/client', () => ({
-  getClientAuth: () => ({}),
-  isClientFirebaseConfigured: () => firebaseConfigured,
+let configured = true
+let listener: AuthListener | null = null
+const unsubscribe = vi.fn()
+const onAuthStateChange = vi.fn((callback: AuthListener) => {
+  listener = callback
+  return { data: { subscription: { unsubscribe } } }
+})
+
+vi.mock('@/lib/supabase/config', () => ({
+  supabasePublicConfig: () =>
+    configured ? { url: 'https://project.supabase.co', key: 'publishable' } : null,
 }))
 
-vi.mock('firebase/auth', () => ({
-  onAuthStateChanged: vi.fn(),
+vi.mock('@/lib/supabase/client', () => ({
+  getSupabaseBrowserClient: () =>
+    configured
+      ? { auth: { onAuthStateChange: (callback: AuthListener) => onAuthStateChange(callback) } }
+      : null,
 }))
+
+function emit(event: string, session: FakeSession | null) {
+  if (!listener) throw new Error('no auth listener registered')
+  const notify = listener
+  act(() => notify(event, session))
+}
 
 describe('useUser', () => {
-  afterEach(() => {
+  // Reset before (not after) each test: RTL unmounts the previous hook in its own
+  // afterEach, which would otherwise count toward the next test's unsubscribe.
+  beforeEach(() => {
     vi.clearAllMocks()
-    firebaseConfigured = true
+    configured = true
+    listener = null
   })
 
-  it('reports signed out without touching Firebase when it is not configured', () => {
-    firebaseConfigured = false
+  it('reports signed out without touching the SDK when Supabase is not configured', () => {
+    configured = false
 
     const { result } = renderHook(() => useUser())
 
     expect(result.current).toEqual({ user: null, loading: false })
-    expect(onAuthStateChanged).not.toHaveBeenCalled()
+    expect(onAuthStateChange).not.toHaveBeenCalled()
   })
 
-  it('subscribes to auth state when Firebase is configured', async () => {
-    const unsubscribe = vi.fn()
-    vi.mocked(onAuthStateChanged).mockImplementation((_auth, next) => {
-      if (typeof next === 'function') next(null)
-      return unsubscribe
+  it('starts loading until the initial session arrives', () => {
+    const { result } = renderHook(() => useUser())
+
+    expect(result.current).toEqual({ user: null, loading: true })
+    expect(onAuthStateChange).toHaveBeenCalledOnce()
+  })
+
+  it('maps the session user (Google metadata) to SessionUser', () => {
+    const { result } = renderHook(() => useUser())
+
+    emit('INITIAL_SESSION', {
+      user: {
+        id: 'u1',
+        email: 'ana@example.com',
+        user_metadata: { full_name: 'Ana Souza', avatar_url: 'https://example.com/a.png' },
+      },
     })
 
-    const { result, unmount } = renderHook(() => useUser())
+    expect(result.current).toEqual({
+      user: {
+        id: 'u1',
+        email: 'ana@example.com',
+        name: 'Ana Souza',
+        avatarUrl: 'https://example.com/a.png',
+      },
+      loading: false,
+    })
+  })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
+  it('reports signed out when the session ends', () => {
+    const { result } = renderHook(() => useUser())
+
+    emit('INITIAL_SESSION', { user: { id: 'u1', user_metadata: {} } })
+    expect(result.current.user).toEqual({ id: 'u1', email: null, name: null, avatarUrl: null })
+
+    emit('SIGNED_OUT', null)
+    expect(result.current).toEqual({ user: null, loading: false })
+  })
+
+  it('unsubscribes on unmount', () => {
+    const { unmount } = renderHook(() => useUser())
+
     unmount()
+
     expect(unsubscribe).toHaveBeenCalledOnce()
   })
 })

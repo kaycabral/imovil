@@ -1,5 +1,5 @@
 import { expect, test } from '@e2e/fixtures'
-import { getAdminDb } from '@imovil/db'
+import { getPropertyById } from '@e2e/seed'
 
 test.use({ authAsBroker: true })
 
@@ -32,6 +32,6 @@ test('broker edits a property title from the list menu', async ({ page, seedProp
   // picks the one that's actually shown and avoids strict-mode duplicates.
   await expect(page.getByText(updatedTitle).filter({ visible: true })).toBeVisible()
 
-  const snap = await getAdminDb().collection('properties').doc(id).get()
-  expect(snap.data()?.title).toBe(updatedTitle)
+  const stored = await getPropertyById(id)
+  expect(stored?.title).toBe(updatedTitle)
 })

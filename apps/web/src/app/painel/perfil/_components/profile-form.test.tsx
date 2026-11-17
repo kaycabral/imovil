@@ -1,28 +1,24 @@
+import type { UpdateBrokerProfileResult } from '@/app/actions/profile'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProfileForm } from './profile-form'
 
-vi.mock('@/lib/firebase/client', () => ({
-  getClientAuth: (): { currentUser: { uid: string } } => ({ currentUser: { uid: 'uid-1' } }),
-  getClientDb: (): object => ({}),
+type Contact = { phone: string; creci: string }
+
+const updateBrokerProfile = vi.fn<(input: Contact) => Promise<UpdateBrokerProfileResult>>()
+vi.mock('@/app/actions/profile', () => ({
+  updateBrokerProfile: (input: Contact) => updateBrokerProfile(input),
 }))
 
-const setDoc = vi.fn<(...args: unknown[]) => unknown>().mockResolvedValue(undefined)
-vi.mock('firebase/firestore', () => ({
-  doc: vi.fn(),
-  setDoc: (...args: unknown[]): unknown => setDoc(...args),
-  serverTimestamp: () => 'timestamp',
-}))
-
+const toastSuccess = vi.fn<(message: string) => void>()
 vi.mock('sonner', () => ({
-  toast: { success: vi.fn(), error: vi.fn() },
+  toast: { success: (message: string) => toastSuccess(message), error: vi.fn() },
 }))
 
 function renderWith(initial = { phone: '', creci: '' }) {
   render(
     <ProfileForm
-      uid="uid-1"
       displayName="Juliana Prado"
       email="juliana@example.com"
       avatarUrl={null}
@@ -32,10 +28,10 @@ function renderWith(initial = { phone: '', creci: '' }) {
 }
 
 beforeEach(() => {
-  setDoc.mockClear()
+  updateBrokerProfile.mockResolvedValue({ ok: true })
 })
 afterEach(() => {
-  vi.clearAllMocks()
+  vi.resetAllMocks()
 })
 
 describe('ProfileForm', () => {
@@ -54,7 +50,7 @@ describe('ProfileForm', () => {
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(await screen.findByText(/celular válido/i)).toBeInTheDocument()
-    expect(setDoc).not.toHaveBeenCalled()
+    expect(updateBrokerProfile).not.toHaveBeenCalled()
   })
 
   it('bloqueia save com CRECI vazio', async () => {
@@ -65,10 +61,10 @@ describe('ProfileForm', () => {
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(await screen.findByText(/Informe seu CRECI/)).toBeInTheDocument()
-    expect(setDoc).not.toHaveBeenCalled()
+    expect(updateBrokerProfile).not.toHaveBeenCalled()
   })
 
-  it('salva com dados válidos e envia trim de CRECI', async () => {
+  it('salva com dados válidos, envia trim de CRECI e mostra toast de sucesso', async () => {
     const user = userEvent.setup()
     renderWith()
 
@@ -76,12 +72,12 @@ describe('ProfileForm', () => {
     await user.type(screen.getByLabelText('CRECI'), '  CRECI-AM 1234-F  ')
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
 
-    await waitFor(() => expect(setDoc).toHaveBeenCalledTimes(1))
-    const payload = setDoc.mock.calls[0]![1]
-    expect(payload).toMatchObject({
+    await waitFor(() => expect(updateBrokerProfile).toHaveBeenCalledTimes(1))
+    expect(updateBrokerProfile).toHaveBeenCalledWith({
       phone: '(92) 99999-0000',
       creci: 'CRECI-AM 1234-F',
     })
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith('Perfil atualizado.'))
   })
 
   it('pré-popula com initialValues', () => {
@@ -90,9 +86,25 @@ describe('ProfileForm', () => {
     expect(screen.getByLabelText('CRECI')).toHaveValue('CRECI-AM 9999')
   })
 
-  it('mostra erro inline quando setDoc rejeita', async () => {
+  it('mostra a mensagem de erro devolvida pelo servidor', async () => {
     const user = userEvent.setup()
-    setDoc.mockRejectedValueOnce(new Error('network'))
+    updateBrokerProfile.mockResolvedValueOnce({
+      ok: false,
+      error: 'Sessão expirada — entre novamente.',
+    })
+
+    renderWith({ phone: '(92) 99999-0000', creci: 'CRECI-AM 1234' })
+    await user.click(screen.getByRole('button', { name: 'Salvar' }))
+
+    expect(await screen.findByText('Sessão expirada — entre novamente.')).toBeInTheDocument()
+    expect(toastSuccess).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled()
+  })
+
+  it('mostra erro inline quando a action rejeita', async () => {
+    const user = userEvent.setup()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    updateBrokerProfile.mockRejectedValueOnce(new Error('network'))
 
     renderWith()
     await user.type(screen.getByLabelText('Celular'), '(92) 99999-0000')
@@ -100,5 +112,7 @@ describe('ProfileForm', () => {
     await user.click(screen.getByRole('button', { name: 'Salvar' }))
 
     expect(await screen.findByText(/Não foi possível salvar/)).toBeInTheDocument()
+    expect(toastSuccess).not.toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 })

@@ -6,7 +6,7 @@ import { PropertyCard } from './property-card'
 const base: Property = {
   id: 'abc123',
   slug: 'apto-test',
-  ownerUid: 'uid-1',
+  ownerId: 'uid-1',
   status: 'published',
   kind: 'apartment',
   deal: 'rental',

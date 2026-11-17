@@ -23,9 +23,9 @@ export type PropertyDetail = {
 }
 
 /**
- * Shape de exibição do corretor responsável no anúncio. NÃO é persistido no doc
- * `properties` — é composto em runtime a partir do doc `users/{ownerUid}`. Ficar
- * aqui porque o componente `<Broker>` consome.
+ * Shape de exibição do corretor responsável no anúncio. NÃO é persistido em
+ * `properties` — é composto em runtime a partir de `profiles` (dono do imóvel).
+ * Fica aqui porque o componente `<Broker>` consome.
  */
 export type PropertyBroker = {
   name: string
@@ -44,7 +44,7 @@ export type PropertyCoords = {
 export type Property = {
   id: string
   slug: string
-  ownerUid: string
+  ownerId: string
   status: PropertyStatus
   kind: PropertyKind
   deal: PropertyDeal

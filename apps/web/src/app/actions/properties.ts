@@ -1,9 +1,15 @@
 'use server'
 
-import { getAdminDb } from '@/lib/firebase/admin'
-import { getServerUser } from '@/lib/firebase/server'
+import { getServerUser } from '@/lib/auth/server'
+import {
+  getProfile,
+  getPropertyById,
+  insertProperty,
+  isUniqueViolation,
+  updateProperty as writeProperty,
+  setPropertyStatus as writePropertyStatus,
+} from '@/lib/db'
 import { geocodeAddress } from '@/lib/geocode'
-import { FieldValue } from '@imovil/db'
 import {
   propertyCreateSchema,
   propertyStatusSchema,
@@ -12,25 +18,15 @@ import {
 } from '@imovil/shared'
 import { revalidatePath } from 'next/cache'
 
-const COLLECTION = 'properties'
-
-type ProfileDoc = {
-  phone?: string
-  creci?: string
-}
-
 type BrokerGate = { ok: true } | { ok: false; error: string }
 
 /**
  * Verifica que o perfil do usuário tem phone + creci antes de permitir
- * criar/editar imóvel. Os dados em si **não** são copiados pro doc —
- * são compostos em runtime via `getBrokerByUid` no render do anúncio.
+ * criar/editar imóvel. Os dados em si **não** são copiados pro imóvel —
+ * são compostos em runtime via `getBrokerById` no render do anúncio.
  */
-async function requireBrokerProfile(uid: string): Promise<BrokerGate> {
-  const db = getAdminDb()
-  const snap = await db.collection('users').doc(uid).get()
-  const profile = snap.data() as ProfileDoc | undefined
-
+async function requireBrokerProfile(userId: string): Promise<BrokerGate> {
+  const profile = await getProfile(userId)
   if (!profile?.phone) {
     return { ok: false, error: 'Cadastre seu celular antes de publicar um imóvel.' }
   }
@@ -58,6 +54,9 @@ function randomSuffix(): string {
   return Math.random().toString(36).slice(2, 8)
 }
 
+/** Slug collisions are already unlikely (random suffix); the unique index makes them safe. */
+const SLUG_ATTEMPTS = 3
+
 export async function createProperty(input: PropertyCreateInput): Promise<CreatePropertyResult> {
   const user = await getServerUser()
   if (!user) return { ok: false, error: 'Sessão expirada. Faça login novamente.' }
@@ -67,14 +66,11 @@ export async function createProperty(input: PropertyCreateInput): Promise<Create
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Dados inválidos.' }
   }
 
-  const gate = await requireBrokerProfile(user.uid)
+  const gate = await requireBrokerProfile(user.id)
   if (!gate.ok) return { ok: false, error: gate.error }
 
   const data = parsed.data
-  const db = getAdminDb()
-
   const base = slugify(data.title) || 'imovel'
-  const slug = `${base}-${randomSuffix()}`
 
   // Geocoding "best effort" — se falhar, mapa não aparece mas o imóvel é criado.
   const coords = await geocodeAddress({
@@ -84,21 +80,20 @@ export async function createProperty(input: PropertyCreateInput): Promise<Create
     state: data.state,
   })
 
-  const ref = db.collection(COLLECTION).doc()
-  await ref.set({
-    ...data,
-    coords,
-    ownerUid: user.uid,
-    slug,
-    status: 'draft',
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
-  })
-
-  revalidatePath('/painel/imoveis')
-  revalidatePath('/imoveis')
-
-  return { ok: true, id: ref.id, slug }
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const created = await insertProperty(user.id, `${base}-${randomSuffix()}`, {
+        ...data,
+        coords,
+      })
+      revalidatePath('/painel/imoveis')
+      revalidatePath('/imoveis')
+      return { ok: true, ...created }
+    } catch (error) {
+      if (attempt < SLUG_ATTEMPTS && isUniqueViolation(error, 'properties_slug_unique')) continue
+      throw error
+    }
+  }
 }
 
 export type UpdatePropertyResult = { ok: true; slug: string } | { ok: false; error: string }
@@ -116,32 +111,19 @@ export async function updateProperty(
   }
   const data = parsed.data
 
-  const db = getAdminDb()
-  const ref = db.collection(COLLECTION).doc(propertyId)
-  const snap = await ref.get()
-  if (!snap.exists) return { ok: false, error: 'Imóvel não encontrado.' }
-  const current = snap.data() as
-    | {
-        ownerUid?: string
-        slug?: string
-        street?: string
-        neighborhood?: string
-        city?: string
-        state?: string
-        coords?: { lat: number; lng: number } | null
-      }
-    | undefined
-  if (current?.ownerUid !== user.uid) return { ok: false, error: 'Sem permissão.' }
+  const current = await getPropertyById(propertyId)
+  if (!current) return { ok: false, error: 'Imóvel não encontrado.' }
+  if (current.ownerId !== user.id) return { ok: false, error: 'Sem permissão.' }
 
-  const gate = await requireBrokerProfile(user.uid)
+  const gate = await requireBrokerProfile(user.id)
   if (!gate.ok) return { ok: false, error: gate.error }
 
   // Re-geocodifica apenas se algum campo de endereço mudou — economiza requests ao Nominatim.
   const addressChanged =
-    current?.street !== data.street ||
-    current?.neighborhood !== data.neighborhood ||
-    current?.city !== data.city ||
-    current?.state !== data.state
+    current.street !== data.street ||
+    current.neighborhood !== data.neighborhood ||
+    current.city !== data.city ||
+    current.state !== data.state
   const coords = addressChanged
     ? await geocodeAddress({
         street: data.street,
@@ -149,19 +131,15 @@ export async function updateProperty(
         city: data.city,
         state: data.state,
       })
-    : (current?.coords ?? null)
+    : current.coords
 
-  await ref.update({
-    ...data,
-    coords,
-    updatedAt: FieldValue.serverTimestamp(),
-  })
+  await writeProperty(propertyId, { ...data, floor: data.floor ?? null, coords })
 
   revalidatePath('/painel/imoveis')
   revalidatePath('/imoveis')
-  revalidatePath(`/imoveis/${current?.slug ?? ''}`)
+  revalidatePath(`/imoveis/${current.slug}`)
 
-  return { ok: true, slug: current?.slug ?? '' }
+  return { ok: true, slug: current.slug }
 }
 
 export type SetPropertyStatusResult = { ok: true } | { ok: false; error: string }
@@ -176,16 +154,14 @@ export async function setPropertyStatus(
   const user = await getServerUser()
   if (!user) return { ok: false, error: 'Sessão expirada. Faça login novamente.' }
 
-  const db = getAdminDb()
-  const ref = db.collection(COLLECTION).doc(propertyId)
-  const snap = await ref.get()
-  if (!snap.exists) return { ok: false, error: 'Imóvel não encontrado.' }
-  const data = snap.data() as { ownerUid?: string } | undefined
-  if (data?.ownerUid !== user.uid) return { ok: false, error: 'Sem permissão.' }
+  const current = await getPropertyById(propertyId)
+  if (!current) return { ok: false, error: 'Imóvel não encontrado.' }
+  if (current.ownerId !== user.id) return { ok: false, error: 'Sem permissão.' }
 
-  await ref.update({ status: parsed.data, updatedAt: FieldValue.serverTimestamp() })
+  await writePropertyStatus(propertyId, parsed.data)
 
   revalidatePath('/painel/imoveis')
   revalidatePath('/imoveis')
+  revalidatePath(`/imoveis/${current.slug}`)
   return { ok: true }
 }

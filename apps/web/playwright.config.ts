@@ -1,15 +1,26 @@
-import { firebaseEmulatorWebServer } from '@cbrl/testing/firebase'
 import { defineConfig, devices } from '@playwright/test'
 
-import { BASE_URL, E2E_PORT } from './e2e/constants'
+import { BASE_URL } from './e2e/constants'
+import { readLocalSupabase } from './e2e/local-supabase'
 
-const PROJECT_ID = 'imovil-local'
+// E2E runs against the LOCAL Supabase stack (`pnpm db:start`). Its URL, keys and
+// database come from `supabase status`; setting them on process.env here makes
+// both the Next server and the Playwright workers (fixtures seed through
+// `@imovil/db` and the Supabase admin API) inherit them.
+const local = readLocalSupabase()
+const supabaseEnv = {
+  NEXT_PUBLIC_SUPABASE_URL: local.apiUrl,
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: local.publishableKey,
+  SUPABASE_SECRET_KEY: local.secretKey,
+  POSTGRES_URL: local.dbUrl,
+}
+Object.assign(process.env, supabaseEnv)
 
 export default defineConfig({
   testDir: './src',
   testMatch: '**/_e2e/**/*.spec.ts',
   // Parallel-safe: no global wipe, and every seed gets a per-test-unique title
-  // (see e2e/fixtures.ts), so workers sharing the emulator project never clobber
+  // (see e2e/fixtures.ts), so workers sharing the local database never clobber
   // each other. Specs navigate by unique slug or assert against the returned
   // title — never a hard-coded string.
   fullyParallel: true,
@@ -29,17 +40,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Emulator hosts + GCLOUD_PROJECT are injected by `firebase emulators:exec`
-  // (the `test:e2e` script) and inherited here; only the app-specific public
-  // test values are passed below.
-  webServer: firebaseEmulatorWebServer({
+  webServer: {
     command: 'pnpm run dev',
-    port: E2E_PORT,
-    projectId: PROJECT_ID,
+    url: BASE_URL,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
     env: {
+      ...supabaseEnv,
+      ENABLE_TEST_AUTH: 'true',
       NEXT_PUBLIC_MAPTILER_API_KEY: 'ci-local',
       NEXT_PUBLIC_SITE_URL: BASE_URL,
       NOMINATIM_URL: `${BASE_URL}/api/_test/nominatim`,
     },
-  }),
+  },
 })

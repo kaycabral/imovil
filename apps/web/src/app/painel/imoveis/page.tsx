@@ -1,8 +1,8 @@
 import { Container } from '@/components/container'
+import { getServerUser } from '@/lib/auth/server'
+import { listProperties } from '@/lib/db'
 import { getFeatures } from '@/lib/features'
-import { getServerUser } from '@/lib/firebase/server'
 import { formatBRLFromCents } from '@/lib/money'
-import { listProperties } from '@/lib/properties/server'
 import { Badge, Button, Card, CardContent } from '@cbrl/design'
 import type { Property, PropertyStatus } from '@imovil/shared'
 import { Plus } from 'lucide-react'
@@ -41,8 +41,9 @@ export default async function PropertiesPage({ searchParams }: { searchParams: S
   const sp = await searchParams
   const selected: 'todos' | PropertyStatus = isPropertyStatusFilter(sp.status) ? sp.status : 'todos'
 
-  const [user, features] = await Promise.all([getServerUser(), getFeatures()])
-  const allProperties = user ? await listProperties({ ownerUid: user.uid }) : []
+  const user = await getServerUser()
+  const features = getFeatures()
+  const allProperties = user ? await listProperties({ ownerId: user.id }) : []
   const properties =
     selected === 'todos' ? allProperties : allProperties.filter((p) => p.status === selected)
 

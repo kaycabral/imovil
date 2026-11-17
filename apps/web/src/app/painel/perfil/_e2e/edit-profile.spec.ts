@@ -1,5 +1,5 @@
 import { expect, test } from '@e2e/fixtures'
-import { getAdminDb } from '@imovil/db'
+import { getProfile } from '@e2e/seed'
 
 test.use({ authAsBroker: true })
 
@@ -13,8 +13,7 @@ test('broker edits phone and creci in profile page', async ({ page, broker }) =>
 
   await expect(page.getByText('Perfil atualizado.')).toBeVisible()
 
-  const snap = await getAdminDb().collection('users').doc(broker.uid).get()
-  const data = snap.data()
+  const data = await getProfile(broker.id)
   expect(data?.phone).toBe('(92) 98888-7777')
   expect(data?.creci).toBe('CRECI-AM 9876-F')
 })

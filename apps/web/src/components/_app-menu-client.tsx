@@ -125,14 +125,14 @@ function AuthCluster() {
         aria-label="Abrir menu da conta"
       >
         <Avatar className="size-7">
-          {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName ?? ''} />}
-          <AvatarFallback>{initials(user.displayName, user.email)}</AvatarFallback>
+          {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.name ?? ''} />}
+          <AvatarFallback>{initials(user.name, user.email)}</AvatarFallback>
         </Avatar>
         <ChevronDown className="text-muted-foreground size-3.5 transition-transform group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col gap-0.5 font-normal">
-          {user.displayName && <span className="text-sm font-medium">{user.displayName}</span>}
+          {user.name && <span className="text-sm font-medium">{user.name}</span>}
           {user.email && (
             <span className="text-muted-foreground truncate text-xs">{user.email}</span>
           )}
@@ -181,13 +181,11 @@ function MobileCluster({ features, primaryCta }: { features: Features; primaryCt
           {user ? (
             <div className="flex items-center gap-3">
               <Avatar className="size-10">
-                {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName ?? ''} />}
-                <AvatarFallback>{initials(user.displayName, user.email)}</AvatarFallback>
+                {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.name ?? ''} />}
+                <AvatarFallback>{initials(user.name, user.email)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                {user.displayName && (
-                  <p className="truncate text-sm font-medium">{user.displayName}</p>
-                )}
+                {user.name && <p className="truncate text-sm font-medium">{user.name}</p>}
                 {user.email && (
                   <p className="text-muted-foreground truncate text-xs">{user.email}</p>
                 )}

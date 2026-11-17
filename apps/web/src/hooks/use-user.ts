@@ -1,21 +1,41 @@
 'use client'
 
-import { getClientAuth, isClientFirebaseConfigured } from '@/lib/firebase/client'
-import { onAuthStateChanged, type User } from 'firebase/auth'
 import { useEffect, useState } from 'react'
 
-export function useUser() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(isClientFirebaseConfigured)
+import { toSessionUser, type SessionUser } from '@/lib/auth/session-user'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { supabasePublicConfig } from '@/lib/supabase/config'
+
+type UserState = { user: SessionUser | null; loading: boolean }
+
+/**
+ * Signed-in user for client UI (menu, avatar). Driven by Supabase's auth events
+ * (`INITIAL_SESSION` resolves the first render). Without Supabase config it
+ * reports signed out right away instead of touching the SDK.
+ */
+export function useUser(): UserState {
+  const [state, setState] = useState<UserState>(() => ({
+    user: null,
+    loading: supabasePublicConfig() !== null,
+  }))
 
   useEffect(() => {
-    if (!isClientFirebaseConfigured()) return
-    const unsubscribe = onAuthStateChanged(getClientAuth(), (next) => {
-      setUser(next)
-      setLoading(false)
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) return
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setState({
+        user: session
+          ? toSessionUser({
+              id: session.user.id,
+              email: session.user.email,
+              metadata: session.user.user_metadata,
+            })
+          : null,
+        loading: false,
+      })
     })
-    return () => unsubscribe()
+    return () => data.subscription.unsubscribe()
   }, [])
 
-  return { user, loading }
+  return state
 }

@@ -69,8 +69,15 @@ export default function PrivacidadePage() {
         <p>Operadores necessários para a operação do serviço:</p>
         <ul>
           <li>
-            <strong>Google / Firebase</strong>: hospedagem, autenticação e armazenamento dos seus
-            dados.
+            <strong>Supabase</strong>: banco de dados, autenticação e armazenamento das fotos dos
+            imóveis.
+          </li>
+          <li>
+            <strong>Vercel</strong>: hospedagem do site.
+          </li>
+          <li>
+            <strong>Google</strong>: login com a sua conta Google (recebemos nome, e-mail e foto do
+            perfil).
           </li>
           <li>
             <strong>BrasilAPI</strong>: consulta de endereço a partir do CEP que você digita ao

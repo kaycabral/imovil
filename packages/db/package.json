@@ -10,14 +10,25 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:integration:pg": "vitest run --config vitest.pg.config.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {
+    "@cbrl/db": "workspace:*",
     "@cbrl/env": "workspace:*",
-    "firebase-admin": "catalog:"
+    "@imovil/shared": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@cbrl/tsconfig-base": "workspace:*",
-    "typescript": "catalog:"
+    "@types/pg": "catalog:",
+    "drizzle-kit": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

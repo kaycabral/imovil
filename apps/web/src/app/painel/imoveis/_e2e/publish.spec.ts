@@ -1,5 +1,5 @@
 import { expect, test } from '@e2e/fixtures'
-import { getAdminDb } from '@imovil/db'
+import { getPropertyById } from '@e2e/seed'
 
 test.use({ authAsBroker: true })
 
@@ -21,6 +21,6 @@ test('broker publishes a draft property from the list menu', async ({ page, seed
   await expect(page.getByText('Imóvel publicado.')).toBeVisible()
   await expect(row.getByText('Publicado')).toBeVisible()
 
-  const snap = await getAdminDb().collection('properties').doc(id).get()
-  expect(snap.data()?.status).toBe('published')
+  const stored = await getPropertyById(id)
+  expect(stored?.status).toBe('published')
 })

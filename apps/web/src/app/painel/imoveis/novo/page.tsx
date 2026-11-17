@@ -1,6 +1,6 @@
 import { Container } from '@/components/container'
-import { getAdminDb } from '@/lib/firebase/admin'
-import { getServerUser } from '@/lib/firebase/server'
+import { getServerUser } from '@/lib/auth/server'
+import { getProfile } from '@/lib/db'
 import type { Metadata } from 'next'
 import { PageHeader } from '../../_components/page-header'
 import { PropertyForm, type PropertyFormProfile } from '../_components/property-form'
@@ -11,13 +11,11 @@ export const metadata: Metadata = {
 
 export default async function NewPropertyPage() {
   const user = await getServerUser()
-  const profile: PropertyFormProfile = { uid: user?.uid ?? '', phone: null, creci: null }
-
-  if (user) {
-    const snap = await getAdminDb().collection('users').doc(user.uid).get()
-    const data = snap.data() as { phone?: string; creci?: string } | undefined
-    profile.phone = data?.phone ?? null
-    profile.creci = data?.creci ?? null
+  const stored = user ? await getProfile(user.id) : null
+  const profile: PropertyFormProfile = {
+    id: user?.id ?? '',
+    phone: stored?.phone ?? null,
+    creci: stored?.creci ?? null,
   }
 
   return (

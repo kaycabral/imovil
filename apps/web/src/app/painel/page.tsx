@@ -1,8 +1,8 @@
 import { Container } from '@/components/container'
+import { getServerUser } from '@/lib/auth/server'
+import { getPropertyBySlug, listProperties } from '@/lib/db'
 import { getFeatures } from '@/lib/features'
-import { getServerUser } from '@/lib/firebase/server'
 import { formatBRLFromCents } from '@/lib/money'
-import { getPropertyBySlug, listProperties } from '@/lib/properties/server'
 import { Badge, Button, Card, CardContent } from '@cbrl/design'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,14 +11,15 @@ import { PageHeader } from './_components/page-header'
 import { countByStatus, leadStatusLabel, listLeads, type LeadStatus } from './_data/leads'
 
 export default async function DashboardOverviewPage() {
-  const [user, features] = await Promise.all([getServerUser(), getFeatures()])
+  const user = await getServerUser()
+  const features = getFeatures()
   // `name` rides the DecodedIdToken index signature (`[key: string]: any`),
   // so narrow it at the read boundary before splitting.
   const userName = typeof user?.name === 'string' ? user.name : null
   const firstName = userName?.split(/\s+/)[0] ?? user?.email?.split('@')[0] ?? null
   const greeting = firstName ? `Olá, ${firstName}.` : 'Olá.'
 
-  const properties = user ? await listProperties({ ownerUid: user.uid }) : []
+  const properties = user ? await listProperties({ ownerId: user.id }) : []
   const recentProperties = properties.slice(0, 4)
 
   return (

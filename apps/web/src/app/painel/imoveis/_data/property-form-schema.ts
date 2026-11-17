@@ -46,7 +46,7 @@ export function formatPostalCode(raw: string): string {
 }
 
 export type PropertyFormProfile = {
-  uid: string
+  id: string
   phone: string | null
   creci: string | null
 }

@@ -1,5 +1,5 @@
 import { Footer } from '@/components/footer'
-import { getServerUser } from '@/lib/firebase/server'
+import { getServerUser } from '@/lib/auth/server'
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'

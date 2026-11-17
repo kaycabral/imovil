@@ -1,6 +1,6 @@
 'use client'
 
-import { getClientAuth, getClientDb } from '@/lib/firebase/client'
+import { updateBrokerProfile } from '@/app/actions/profile'
 import { initials } from '@/lib/initials'
 import { formatPhoneBR } from '@/lib/phone'
 import {
@@ -13,7 +13,6 @@ import {
   Input,
   Label,
 } from '@cbrl/design'
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -21,13 +20,11 @@ import { toast } from 'sonner'
 export type ProfileFormValues = { phone: string; creci: string }
 
 export function ProfileForm({
-  uid,
   displayName,
   email,
   avatarUrl,
   initialValues,
 }: {
-  uid: string
   displayName: string | null
   email: string | null
   avatarUrl: string | null
@@ -50,20 +47,14 @@ export function ProfileForm({
       return
     }
 
-    const user = getClientAuth().currentUser
-    if (!user || user.uid !== uid) {
-      setError('Sessão expirada — entre novamente.')
-      return
-    }
-
     setError(null)
     setSaving(true)
     try {
-      await setDoc(
-        doc(getClientDb(), 'users', uid),
-        { phone: phone.trim(), creci: creciTrimmed, updatedAt: serverTimestamp() },
-        { merge: true },
-      )
+      const result = await updateBrokerProfile({ phone, creci: creciTrimmed })
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
       toast.success('Perfil atualizado.')
     } catch (err) {
       console.error(err)

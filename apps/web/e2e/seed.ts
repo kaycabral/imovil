@@ -1,28 +1,56 @@
-import { FieldValue, getAdminDb } from '@imovil/db'
+import {
+  getImovilDb,
+  getProfile,
+  getPropertyById,
+  seedProperty as insertSeedProperty,
+  listProperties,
+  updateProfileContact,
+} from '@imovil/db'
 import { propertyCreateSchema, type PropertyCreateInput, type PropertyStatus } from '@imovil/shared'
+import { createClient } from '@supabase/supabase-js'
 
-type SeedProfileInput = {
-  phone?: string
-  creci?: string
-  displayName?: string
-  avatarUrl?: string | null
+/** Admin (secret-key) client for the LOCAL stack. Env set by playwright.config / seed script. */
+function adminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SECRET_KEY
+  if (!url || !key) throw new Error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY are required')
+  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
 }
 
-export async function seedProfile(uid: string, data: SeedProfileInput = {}): Promise<void> {
-  await getAdminDb()
-    .collection('users')
-    .doc(uid)
-    .set(
-      {
-        displayName: data.displayName ?? 'Broker E2E',
-        avatarUrl: data.avatarUrl ?? null,
-        phone: data.phone ?? '92999990000',
-        creci: data.creci ?? 'CRECI-E2E-123',
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true },
-    )
+export type AuthUserInput = { email: string; password: string; displayName: string }
+
+/**
+ * (Re)create a password user in the LOCAL stack. The `on_auth_user_created`
+ * trigger creates its profile. Recreating keeps every run independent.
+ */
+export async function recreateAuthUser(input: AuthUserInput): Promise<string> {
+  const admin = adminClient().auth.admin
+  const { data: list, error: listError } = await admin.listUsers({ page: 1, perPage: 1000 })
+  if (listError) throw listError
+  const existing = list.users.find((u) => u.email === input.email)
+  if (existing) {
+    const { error } = await admin.deleteUser(existing.id)
+    if (error) throw error
+  }
+  const { data, error } = await admin.createUser({
+    email: input.email,
+    password: input.password,
+    email_confirm: true,
+    user_metadata: { full_name: input.displayName },
+  })
+  if (error) throw error
+  return data.user.id
+}
+
+export async function seedProfile(
+  userId: string,
+  data: { phone?: string; creci?: string } = {},
+): Promise<void> {
+  const saved = await updateProfileContact(userId, {
+    phone: data.phone ?? '92999990000',
+    creci: data.creci ?? 'CRECI-E2E-123',
+  })
+  if (!saved) throw new Error(`seedProfile: no profile for ${userId}`)
 }
 
 const defaultInput: PropertyCreateInput = propertyCreateSchema.parse({
@@ -39,7 +67,9 @@ const defaultInput: PropertyCreateInput = propertyCreateSchema.parse({
   rooms: 2,
   builtYear: 2020,
   description: ['Descrição de teste gerada pelo seed E2E.'],
-  images: [{ path: 'e2e/test.jpg', src: 'http://127.0.0.1:9199/test.jpg', alt: 'Foto de teste' }],
+  images: [
+    { path: 'e2e/test.jpg', src: 'https://picsum.photos/seed/imovil-e2e/1200/800', alt: 'Foto' },
+  ],
 })
 
 function slugify(s: string): string {
@@ -57,7 +87,7 @@ function randomSuffix(): string {
 }
 
 export type SeedPropertyInput = {
-  ownerUid: string
+  ownerId: string
   status?: PropertyStatus
   coords?: { lat: number; lng: number } | null
   overrides?: Partial<PropertyCreateInput>
@@ -68,35 +98,19 @@ export type SeededProperty = { id: string; slug: string }
 export async function seedProperty(input: SeedPropertyInput): Promise<SeededProperty> {
   // Parse catches drift between seed defaults and PropertyCreateInput shape —
   // any schema change in @imovil/shared that breaks the seed fails loudly here.
-  const data = propertyCreateSchema.parse({ ...defaultInput, ...input.overrides })
-
-  const db = getAdminDb()
-  const ref = db.collection('properties').doc()
+  const { floor, ...data } = propertyCreateSchema.parse({ ...defaultInput, ...input.overrides })
+  const coords = input.coords === undefined ? { lat: -3.1, lng: -60.02 } : input.coords
   const slug = `${slugify(data.title) || 'imovel'}-${randomSuffix()}`
-
-  // `broker` é exigido pelo shape atual do doc (copiado em createProperty).
-  // Seedamos com o mesmo shape pra manter o spec agnóstico de como a [slug]
-  // page compõe o contato — se o repo migrar pra lookup dinâmico via
-  // `getBrokerByUid`, o campo extra fica ignorado sem quebrar os testes.
-  const broker = {
-    name: 'Broker E2E',
-    role: 'Corretor responsável',
-    creci: 'CRECI-E2E-123',
-    phone: '92999990000',
-    whatsappText: 'Olá, vi o imóvel pelo Imovil e queria agendar uma visita.',
-    avatar: 'http://127.0.0.1:9199/broker-avatar.jpg',
-  }
-
-  await ref.set({
+  const id = await insertSeedProperty(getImovilDb(), {
     ...data,
-    broker,
-    coords: input.coords === undefined ? { lat: -3.1, lng: -60.02 } : input.coords,
-    ownerUid: input.ownerUid,
+    floor: floor ?? null,
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
+    ownerId: input.ownerId,
     slug,
     status: input.status ?? 'draft',
-    createdAt: FieldValue.serverTimestamp(),
-    updatedAt: FieldValue.serverTimestamp(),
   })
-
-  return { id: ref.id, slug }
+  return { id, slug }
 }
+
+export { getProfile, getPropertyById, listProperties }

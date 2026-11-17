@@ -1,8 +1,10 @@
+import type { UpdateBrokerProfileResult } from '@/app/actions/profile'
 import type { CreatePropertyResult, UpdatePropertyResult } from '@/app/actions/properties'
 import type { PropertyCreateInput } from '@imovil/shared'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { PROPERTY_FORM_DEFAULTS } from '../_data/property-form-schema'
 import { PropertyForm, type PropertyFormProfile } from './property-form'
 
 function parseDraft(raw: string): { values: { title: string } } {
@@ -25,29 +27,38 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }))
 
-vi.mock('@/lib/firebase/client', () => ({
-  getClientAuth: () => ({ currentUser: { uid: 'uid-1' } }),
-  getClientDb: () => ({}),
-  getClientStorage: () => ({}),
+type Contact = { phone: string; creci: string }
+type StorageError = { message: string } | null
+
+const updateBrokerProfile = vi.fn<(input: Contact) => Promise<UpdateBrokerProfileResult>>()
+vi.mock('@/app/actions/profile', () => ({
+  updateBrokerProfile: (input: Contact) => updateBrokerProfile(input),
 }))
 
-const setDoc = vi.fn<(...args: unknown[]) => Promise<void>>().mockResolvedValue(undefined)
-vi.mock('firebase/firestore', () => ({
-  doc: vi.fn(),
-  setDoc: (...args: unknown[]) => setDoc(...args),
-  serverTimestamp: () => 'timestamp',
+// Fake Supabase browser client: just the Auth/Storage surface the form uses.
+let sessionUserId: string | null = 'uid-1'
+const getSession = vi.fn(() =>
+  Promise.resolve({
+    data: { session: sessionUserId ? { user: { id: sessionUserId } } : null },
+  }),
+)
+const upload = vi
+  .fn<
+    (path: string, file: File, options: { contentType: string }) => Promise<{ error: StorageError }>
+  >()
+  .mockResolvedValue({ error: null })
+const getPublicUrl = vi.fn((path: string) => ({
+  data: { publicUrl: `https://storage.example.com/${path}` },
 }))
-
-const uploadBytes = vi.fn<(...args: unknown[]) => Promise<void>>().mockResolvedValue(undefined)
-const getDownloadURL = vi
-  .fn<(...args: unknown[]) => Promise<string>>()
-  .mockResolvedValue('https://firebasestorage.googleapis.com/fake.jpg')
-const deleteObject = vi.fn<(...args: unknown[]) => Promise<void>>().mockResolvedValue(undefined)
-vi.mock('firebase/storage', () => ({
-  uploadBytes: (...args: unknown[]) => uploadBytes(...args),
-  getDownloadURL: (...args: unknown[]) => getDownloadURL(...args),
-  deleteObject: (...args: unknown[]) => deleteObject(...args),
-  ref: vi.fn((_: unknown, path: string) => ({ fullPath: path })),
+const remove = vi
+  .fn<(paths: string[]) => Promise<{ error: StorageError }>>()
+  .mockResolvedValue({ error: null })
+const storageFrom = vi.fn((_bucket: string) => ({ upload, getPublicUrl, remove }))
+vi.mock('@/lib/supabase/client', () => ({
+  getSupabaseBrowserClient: () => ({
+    auth: { getSession: () => getSession() },
+    storage: { from: (bucket: string) => storageFrom(bucket) },
+  }),
 }))
 
 const createProperty = vi
@@ -72,22 +83,28 @@ vi.mock('sonner', () => ({
 }))
 
 const profileWithPhone: PropertyFormProfile = {
-  uid: 'uid-1',
+  id: 'uid-1',
   phone: '(92) 99999-0000',
   creci: 'CRECI-AM 1234-F',
 }
 const profileNoPhone: PropertyFormProfile = {
-  uid: 'uid-1',
+  id: 'uid-1',
   phone: null,
   creci: null,
 }
 
 beforeEach(() => {
   window.localStorage.clear()
-  setDoc.mockClear()
-  uploadBytes.mockClear()
-  getDownloadURL.mockClear()
-  deleteObject.mockClear()
+  sessionUserId = 'uid-1'
+  getSession.mockClear()
+  upload.mockClear()
+  upload.mockResolvedValue({ error: null })
+  getPublicUrl.mockClear()
+  remove.mockClear()
+  remove.mockResolvedValue({ error: null })
+  storageFrom.mockClear()
+  updateBrokerProfile.mockReset()
+  updateBrokerProfile.mockResolvedValue({ ok: true })
   createProperty.mockClear()
   updateProperty.mockClear()
   toastSuccess.mockClear()
@@ -370,7 +387,8 @@ describe('PropertyForm — persistência em localStorage', () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/Título/)).toHaveValue('')
     })
-    expect(deleteObject).toHaveBeenCalledTimes(2)
+    expect(storageFrom).toHaveBeenCalledWith('property-images')
+    expect(remove).toHaveBeenCalledWith(['properties/uid-1/x/a.jpg', 'properties/uid-1/x/b.jpg'])
     await waitFor(() => {
       expect(window.localStorage.getItem('property-form:draft:uid-1')).toBeNull()
     })
@@ -621,7 +639,7 @@ describe('BrokerContactDialog — validação', () => {
     await user.click(screen.getByRole('button', { name: /Salvar e publicar/i }))
 
     expect(await screen.findByText(/celular válido/i)).toBeInTheDocument()
-    expect(setDoc).not.toHaveBeenCalled()
+    expect(updateBrokerProfile).not.toHaveBeenCalled()
     expect(createProperty).not.toHaveBeenCalled()
   })
 
@@ -639,7 +657,7 @@ describe('BrokerContactDialog — validação', () => {
     await user.click(screen.getByRole('button', { name: /Salvar e publicar/i }))
 
     expect(await screen.findByText(/Informe seu CRECI/)).toBeInTheDocument()
-    expect(setDoc).not.toHaveBeenCalled()
+    expect(updateBrokerProfile).not.toHaveBeenCalled()
     expect(createProperty).not.toHaveBeenCalled()
   })
 
@@ -656,8 +674,31 @@ describe('BrokerContactDialog — validação', () => {
     await user.type(screen.getByLabelText('CRECI'), 'CRECI-AM 1234')
     await user.click(screen.getByRole('button', { name: /Salvar e publicar/i }))
 
-    await waitFor(() => expect(setDoc).toHaveBeenCalledTimes(1))
+    await waitFor(() =>
+      expect(updateBrokerProfile).toHaveBeenCalledWith({
+        phone: '(92) 99999-0000',
+        creci: 'CRECI-AM 1234',
+      }),
+    )
     await waitFor(() => expect(createProperty).toHaveBeenCalledTimes(1))
+  })
+  it('mostra o erro do servidor e não cria o imóvel quando salvar o contato falha', async () => {
+    const user = userEvent.setup()
+    updateBrokerProfile.mockResolvedValueOnce({ ok: false, error: 'Informe seu CRECI.' })
+    window.localStorage.setItem('property-form:draft:uid-1', draftWithoutBrokerInfo())
+
+    render(<PropertyForm profile={profileNoPhone} />)
+    await waitFor(() => expect(screen.getByLabelText(/Título/)).toHaveValue('Título ok'))
+    await user.click(screen.getByRole('button', { name: /Salvar como rascunho/i }))
+
+    await screen.findByText(/Quase lá/)
+    await user.type(screen.getByLabelText('Celular'), '(92) 99999-0000')
+    await user.type(screen.getByLabelText('CRECI'), 'CRECI-AM 1234')
+    await user.click(screen.getByRole('button', { name: /Salvar e publicar/i }))
+
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Informe seu CRECI.'))
+    expect(createProperty).not.toHaveBeenCalled()
+    expect(screen.getByText(/Quase lá/)).toBeInTheDocument()
   })
 })
 
@@ -800,8 +841,15 @@ describe('PropertyForm — image upload', () => {
     })
 
     await waitFor(() => {
-      expect(uploadBytes).toHaveBeenCalledTimes(1)
+      expect(upload).toHaveBeenCalledTimes(1)
     })
+    const [path, uploadedFile, options] = upload.mock.calls[0]!
+    // Storage policies only allow writes under the signed-in user's folder.
+    expect(path).toMatch(/^uid-1\/.+-foto\.jpg$/)
+    expect(uploadedFile).toBe(file)
+    expect(options).toEqual({ contentType: 'image/jpeg' })
+    expect(storageFrom).toHaveBeenCalledWith('property-images')
+    expect(getPublicUrl).toHaveBeenCalledWith(path)
     await waitFor(() => {
       expect(screen.getByAltText('foto.jpg')).toBeInTheDocument()
     })
@@ -814,7 +862,7 @@ describe('PropertyForm — image upload', () => {
   // validador interno, bypassamos com fireEvent.change direto. jsdom não tem
   // `DataTransfer`, então definimos `input.files` direto — `handleFiles` só lê
   // `.length` + `Array.from(files)`, ambos compatíveis com um array.
-  function fireFileChange(input: HTMLInputElement, files: File[]) {
+  function fireFileChange(input: HTMLElement, files: File[]) {
     Object.defineProperty(input, 'files', { configurable: true, value: files })
     fireEvent.change(input)
   }
@@ -832,7 +880,7 @@ describe('PropertyForm — image upload', () => {
     await waitFor(() =>
       expect(toastError).toHaveBeenCalledWith(expect.stringContaining('não é uma imagem')),
     )
-    expect(uploadBytes).not.toHaveBeenCalled()
+    expect(upload).not.toHaveBeenCalled()
   })
 
   it('rejeita arquivo acima de 5 MB com toast.error', async () => {
@@ -849,12 +897,15 @@ describe('PropertyForm — image upload', () => {
     await waitFor(() =>
       expect(toastError).toHaveBeenCalledWith(expect.stringContaining('máximo 5 MB')),
     )
-    expect(uploadBytes).not.toHaveBeenCalled()
+    expect(upload).not.toHaveBeenCalled()
   })
 
-  it('faz rollback (deleteObject) quando um upload no meio de uma rajada falha', async () => {
+  it('faz rollback (remove) quando um upload no meio de uma rajada falha', async () => {
     const user = userEvent.setup()
-    uploadBytes.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('network fail'))
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    upload
+      .mockResolvedValueOnce({ error: null })
+      .mockResolvedValueOnce({ error: new Error('network fail') })
 
     render(<PropertyForm profile={profileWithPhone} />)
 
@@ -867,11 +918,53 @@ describe('PropertyForm — image upload', () => {
     })
 
     await waitFor(() => {
-      expect(uploadBytes).toHaveBeenCalledTimes(2)
+      expect(upload).toHaveBeenCalledTimes(2)
     })
     // o primeiro foi uploaded com sucesso; o segundo falhou; rollback deve apagar o primeiro
+    const firstPath = upload.mock.calls[0]![0]
     await waitFor(() => {
-      expect(deleteObject).toHaveBeenCalledTimes(1)
+      expect(remove).toHaveBeenCalledWith([firstPath])
     })
+    expect(toastError).toHaveBeenCalledWith('network fail')
+    expect(screen.queryByAltText('ok.jpg')).not.toBeInTheDocument()
+    consoleError.mockRestore()
+  })
+
+  it('pede login de novo quando não há sessão e não sobe nada', async () => {
+    sessionUserId = null
+    render(<PropertyForm profile={profileWithPhone} />)
+
+    const file = new File(['a'], 'foto.jpg', { type: 'image/jpeg' })
+    const fileInput = screen.getByLabelText('Adicionar imagens')
+    fireFileChange(fileInput, [file])
+
+    expect(await screen.findByText('Sessão expirada — entre novamente.')).toBeInTheDocument()
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('remove a imagem do Storage e do grid ao clicar em remover', async () => {
+    const user = userEvent.setup()
+    render(
+      <PropertyForm
+        profile={profileWithPhone}
+        mode="edit"
+        propertyId="p42"
+        initial={{
+          values: {
+            ...PROPERTY_FORM_DEFAULTS,
+            title: 'Com foto',
+          },
+          images: [{ path: 'uid-1/a.jpg', src: 'https://fake/a.jpg', alt: 'a.jpg' }],
+          postalCodeInput: '',
+          postalCodeResult: null,
+        }}
+      />,
+    )
+
+    expect(screen.getByAltText('a.jpg')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Remover imagem' }))
+
+    await waitFor(() => expect(screen.queryByAltText('a.jpg')).not.toBeInTheDocument())
+    expect(remove).toHaveBeenCalledWith(['uid-1/a.jpg'])
   })
 })

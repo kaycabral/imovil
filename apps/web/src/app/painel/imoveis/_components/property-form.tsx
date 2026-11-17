@@ -1,5 +1,6 @@
 'use client'
 
+import { updateBrokerProfile } from '@/app/actions/profile'
 import { createProperty, updateProperty } from '@/app/actions/properties'
 import {
   Form,
@@ -10,10 +11,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { getClientAuth, getClientDb } from '@/lib/firebase/client'
 import { Button, Input, Skeleton } from '@cbrl/design'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { Loader2, MapPin } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
@@ -78,7 +77,7 @@ export function PropertyForm({
   })
 
   const { draftHydrated, draftRestored, clearDraft } = usePropertyDraft({
-    uid: profile.uid,
+    uid: profile.id,
     isEdit,
     initial,
     form,
@@ -153,22 +152,11 @@ export function PropertyForm({
   }
 
   async function handlePhoneSubmit(newPhone: string, newCreci: string) {
-    const user = getClientAuth().currentUser
-    if (!user) {
-      toast.error('Sessão expirada — entre novamente.')
+    const result = await updateBrokerProfile({ phone: newPhone, creci: newCreci })
+    if (!result.ok) {
+      toast.error(result.error)
       return
     }
-
-    const userRef = doc(getClientDb(), 'users', user.uid)
-    await setDoc(
-      userRef,
-      {
-        phone: newPhone,
-        creci: newCreci,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    )
 
     setPhone(newPhone)
     setCreci(newCreci)

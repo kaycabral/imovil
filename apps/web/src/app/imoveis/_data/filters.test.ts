@@ -6,7 +6,7 @@ function makeProperty(overrides: Partial<Property> = {}): Property {
   return {
     id: 'id',
     slug: 'slug',
-    ownerUid: 'u',
+    ownerId: 'u',
     status: 'published',
     kind: 'apartment',
     deal: 'rental',

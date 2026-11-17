@@ -1,6 +1,6 @@
 import { Container } from '@/components/container'
+import { getPropertyBySlug } from '@/lib/db'
 import { getFeatures } from '@/lib/features'
-import { getPropertyBySlug } from '@/lib/properties/server'
 import { Badge, Button, Card } from '@cbrl/design'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -26,7 +26,7 @@ function formatDate(iso: string) {
 type SearchParams = Promise<{ status?: string }>
 
 export default async function LeadsListPage({ searchParams }: { searchParams: SearchParams }) {
-  const features = await getFeatures()
+  const features = getFeatures()
   if (!features.leads) notFound()
 
   const sp = await searchParams

@@ -7,22 +7,7 @@
       "count": 1
     }
   },
-  "e2e/fixtures.ts": {
-    "@typescript-eslint/no-unsafe-type-assertion": {
-      "count": 1
-    }
-  },
   "src/app/actions/properties.test.ts": {
-    "@typescript-eslint/no-unsafe-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/app/api/e2e-signin/_components/test-sign-in.tsx": {
-    "no-restricted-syntax": {
-      "count": 2
-    }
-  },
-  "src/app/novidades/page.tsx": {
     "@typescript-eslint/no-unsafe-type-assertion": {
       "count": 1
     }
@@ -66,24 +51,6 @@
   "src/components/auto-sign-in.tsx": {
     "@typescript-eslint/no-unsafe-type-assertion": {
       "count": 1
-    }
-  },
-  "src/hooks/use-google-sign-in.ts": {
-    "@typescript-eslint/no-unsafe-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/lib/firestore.ts": {
-    "@typescript-eslint/no-unsafe-type-assertion": {
-      "count": 1
-    }
-  },
-  "src/lib/properties/server.test.ts": {
-    "@typescript-eslint/no-unsafe-assignment": {
-      "count": 3
-    },
-    "@typescript-eslint/no-unsafe-member-access": {
-      "count": 4
     }
   }
 }

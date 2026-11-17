@@ -1,11 +1,10 @@
 import path from 'node:path'
 
-import { authEmulatorHost } from '@cbrl/testing/firebase'
-import { getAdminAuth } from '@imovil/db'
 import { test as base, expect } from '@playwright/test'
 
 import { BASE_URL, BROKER_DISPLAY_NAME } from './constants'
 import {
+  recreateAuthUser,
   seedProfile,
   seedProperty as seedPropertyRaw,
   type SeededProperty,
@@ -13,84 +12,67 @@ import {
 } from './seed'
 
 export type SeededWithTitle = SeededProperty & { title: string }
-// ownerUid is optional here — it defaults to this worker's broker.
+// ownerId is optional here — it defaults to this worker's broker.
 export type SeedPropertyFn = (
-  input?: Omit<SeedPropertyInput, 'ownerUid'> & { ownerUid?: string },
+  input?: Omit<SeedPropertyInput, 'ownerId'> & { ownerId?: string },
 ) => Promise<SeededWithTitle>
 
-const API_KEY = 'ci-local'
+const BROKER_PASSWORD = 'e2e-broker-password'
+
+function brokerEmail(workerIndex: number): string {
+  return `broker-w${workerIndex}@e2e.test`
+}
 
 type WorkerFixtures = {
   // One broker account per parallel worker. The painel list each worker sees
   // holds only its own broker's properties, so parallel workers never race on a
   // shared global list (Playwright's one-account-per-worker pattern). Tests
   // within a worker run serially, so there's no intra-worker race either.
-  brokerUid: string
+  brokerId: string
   brokerStorageState: string
 }
 
 type TestFixtures = {
   // Opt-in (per `test.use`): run the test authenticated as the worker's broker.
   authAsBroker: boolean
-  broker: { uid: string }
-  // Seeds a property owned by the worker's broker (override via `ownerUid`),
+  broker: { id: string }
+  // Seeds a property owned by the worker's broker (override via `ownerId`),
   // with a per-test-unique title so parallel workers never collide. Assert on
   // the returned `title`/`slug`, never a hard-coded string.
   seedProperty: SeedPropertyFn
 }
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
-  brokerUid: [
+  brokerId: [
     async ({}, use, workerInfo) => {
-      const uid = `e2ebroker-w${workerInfo.workerIndex}`
-      const auth = getAdminAuth()
-      try {
-        await auth.deleteUser(uid)
-      } catch {
-        // didn't exist — fine
-      }
-      await auth.createUser({
-        uid,
-        email: `broker-w${workerInfo.workerIndex}@e2e.test`,
+      const id = await recreateAuthUser({
+        email: brokerEmail(workerInfo.workerIndex),
+        password: BROKER_PASSWORD,
         displayName: BROKER_DISPLAY_NAME,
-        emailVerified: true,
       })
-      await seedProfile(uid)
-      await use(uid)
+      await seedProfile(id)
+      await use(id)
     },
     { scope: 'worker' },
   ],
 
   brokerStorageState: [
-    async ({ browser, brokerUid }, use, workerInfo) => {
+    async ({ browser, brokerId }, use, workerInfo) => {
       const file = path.resolve(process.cwd(), 'e2e/.auth', `broker-${workerInfo.workerIndex}.json`)
-      const customToken = await getAdminAuth().createCustomToken(brokerUid)
-
-      const res = await fetch(
-        `http://${authEmulatorHost()}/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: customToken, returnSecureToken: true }),
-        },
-      )
-      if (!res.ok) {
-        throw new Error(`signInWithCustomToken failed: ${res.status} ${await res.text()}`)
-      }
-      const { idToken } = (await res.json()) as { idToken: string }
-
       const context = await browser.newContext({ baseURL: BASE_URL })
-      const page = await context.newPage()
-      const sessionRes = await page.request.post('/api/auth/session', { data: { idToken } })
-      expect(sessionRes.ok(), `POST /api/auth/session failed: ${sessionRes.status()}`).toBeTruthy()
-      // Client SDK sign-in so getClientAuth().currentUser is set (IndexedDB).
-      await page.goto(`/api/e2e-signin?token=${encodeURIComponent(customToken)}`)
-      await expect(page.getByTestId('sign-in-status')).toHaveText('done', { timeout: 15_000 })
-      await context.storageState({ path: file, indexedDB: true })
+      // The test-only route signs in with the Supabase server client, which
+      // writes the real session cookies into this context.
+      const res = await context.request.post('/api/e2e-signin', {
+        data: { email: brokerEmail(workerInfo.workerIndex), password: BROKER_PASSWORD },
+      })
+      expect(res.ok(), `POST /api/e2e-signin failed: ${res.status()}`).toBeTruthy()
+      expect(await res.json()).toEqual({ userId: brokerId })
+      await context.storageState({ path: file })
       await context.close()
       await use(file)
     },
-    { scope: 'worker' },
+    // The first request compiles the route in `next dev`; give it room.
+    { scope: 'worker', timeout: 60_000 },
   ],
 
   authAsBroker: [false, { option: true }],
@@ -99,11 +81,11 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     await use(authAsBroker ? brokerStorageState : undefined)
   },
 
-  broker: async ({ brokerUid }, use) => {
-    await use({ uid: brokerUid })
+  broker: async ({ brokerId }, use) => {
+    await use({ id: brokerId })
   },
 
-  seedProperty: async ({ brokerUid }, use, testInfo) => {
+  seedProperty: async ({ brokerId }, use, testInfo) => {
     const tag = testInfo.testId.replace(/[^a-zA-Z0-9]/g, '').slice(-8)
     let seq = 0
     await use(async (input = {}) => {
@@ -111,7 +93,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
       const baseTitle = input.overrides?.title ?? 'Imóvel'
       const title = `${baseTitle} ${tag}-${seq}`
       const res = await seedPropertyRaw({
-        ownerUid: brokerUid,
+        ownerId: brokerId,
         ...input,
         overrides: { ...input.overrides, title },
       })

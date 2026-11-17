@@ -4,11 +4,11 @@ import { BrandLink } from '@/components/brand-link'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
+import { getServerUser } from '@/lib/auth/server'
 import { readBackend } from '@/lib/backend-read'
-import { getServerUser } from '@/lib/firebase/server'
+import { getPropertyBySlug } from '@/lib/db'
 import { formatBRLFromCents } from '@/lib/money'
-import { getBrokerByUid } from '@/lib/properties/broker'
-import { getPropertyBySlug } from '@/lib/properties/server'
+import { getBrokerById } from '@/lib/properties/broker'
 import { Badge, Button, Card, CardContent } from '@cbrl/design'
 import type { Property } from '@imovil/shared'
 import { Car, MapPin, Package, PawPrint } from 'lucide-react'
@@ -52,13 +52,13 @@ export default async function PropertyPage({ params }: PageProps) {
   if (!property) notFound()
 
   const viewer = await getServerUser()
-  const isOwner = viewer?.uid === property.ownerUid
+  const isOwner = viewer?.id === property.ownerId
   // Imóveis não publicados só aparecem pro dono — evita "vazar" rascunho via URL direta.
   if (property.status !== 'published' && !isOwner) notFound()
   const showOwnerStatusNotice = isOwner && property.status !== 'published'
 
   // Broker card is optional: if the profile read fails the listing still renders.
-  const brokerRead = await readBackend('broker', () => getBrokerByUid(property.ownerUid))
+  const brokerRead = await readBackend('broker', () => getBrokerById(property.ownerId))
   const broker = brokerRead.ok ? brokerRead.data : null
 
   return (

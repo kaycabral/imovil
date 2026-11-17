@@ -1,7 +1,6 @@
 import { Container } from '@/components/container'
-import { getAdminDb } from '@/lib/firebase/admin'
-import { getServerUser } from '@/lib/firebase/server'
-import { getPropertyById } from '@/lib/properties/server'
+import { getServerUser } from '@/lib/auth/server'
+import { getProfile, getPropertyById } from '@/lib/db'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '../../../_components/page-header'
@@ -30,14 +29,13 @@ export default async function EditPropertyPage({ params }: PageProps) {
 
   const property = await getPropertyById(id)
   if (!property) notFound()
-  if (property.ownerUid !== user.uid) notFound()
+  if (property.ownerId !== user.id) notFound()
 
-  const profileSnap = await getAdminDb().collection('users').doc(user.uid).get()
-  const profileData = profileSnap.data() as { phone?: string; creci?: string } | undefined
+  const stored = await getProfile(user.id)
   const profile: PropertyFormProfile = {
-    uid: user.uid,
-    phone: profileData?.phone ?? null,
-    creci: profileData?.creci ?? null,
+    id: user.id,
+    phone: stored?.phone ?? null,
+    creci: stored?.creci ?? null,
   }
 
   const initial: PropertyFormInitial = {
