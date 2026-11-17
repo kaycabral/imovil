@@ -1,4 +1,4 @@
-import type { Property } from '@tekoa/shared'
+import type { Property } from '@imovil/shared'
 
 export type ListingFilters = {
   q?: string

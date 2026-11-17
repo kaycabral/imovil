@@ -1,5 +1,5 @@
 import type { CreatePropertyResult, UpdatePropertyResult } from '@/app/actions/properties'
-import type { PropertyCreateInput } from '@tekoa/shared'
+import type { PropertyCreateInput } from '@imovil/shared'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'

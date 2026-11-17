@@ -1,8 +1,8 @@
-# packages/shared — Shared Package (@tekoa/shared)
+# packages/shared — Shared Package (@imovil/shared)
 
 ## Escopo
 
-Compartilhado por todos os workspaces. Mudanças aqui afetam qualquer app que importe `@tekoa/shared` — verifique compatibilidade antes de alterar exports existentes.
+Compartilhado por todos os workspaces. Mudanças aqui afetam qualquer app que importe `@imovil/shared` — verifique compatibilidade antes de alterar exports existentes.
 
 ## Regras
 

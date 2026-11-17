@@ -1,4 +1,4 @@
-import type { Property } from '@tekoa/shared'
+import type { Property } from '@imovil/shared'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { PropertyCard } from './property-card'

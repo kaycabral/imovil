@@ -1,4 +1,4 @@
-import { type PropertyImage } from '@tekoa/shared'
+import { type PropertyImage } from '@imovil/shared'
 import { type PostalCodeLookup, type PropertyFormValues } from '../_data/property-form-schema'
 
 export const DRAFT_KEY_PREFIX = 'property-form:draft:'

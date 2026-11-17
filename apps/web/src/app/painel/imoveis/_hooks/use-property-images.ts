@@ -1,7 +1,7 @@
 'use client'
 
 import { getClientAuth, getClientStorage } from '@/lib/firebase/client'
-import { type PropertyImage } from '@tekoa/shared'
+import { type PropertyImage } from '@imovil/shared'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { useState } from 'react'
 import { toast } from 'sonner'

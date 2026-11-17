@@ -6,7 +6,7 @@ import { PageHeader } from '../_components/page-header'
 import { ProfileForm, type ProfileFormValues } from './_components/profile-form'
 
 export const metadata: Metadata = {
-  title: 'Perfil — Tekoa',
+  title: 'Perfil — Imovil',
 }
 
 export default async function ProfilePage() {

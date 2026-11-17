@@ -3,15 +3,15 @@ import { BrandLink } from '@/components/brand-link'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { getAdminDb, type Timestamp } from '@tekoa/db'
+import { getAdminDb, type Timestamp } from '@imovil/db'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 export const metadata: Metadata = {
-  title: 'Novidades — Tekoa',
-  description: 'O que chegou de novo no Tekoa em cada versão.',
+  title: 'Novidades — Imovil',
+  description: 'O que chegou de novo no Imovil em cada versão.',
 }
 
 // Revalidate hourly — releases are rare and the Firestore read is cheap.
@@ -81,7 +81,7 @@ export default async function NovidadesPage() {
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <Header>
-        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Tekoa</BrandLink>
+        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
         <AppMenu />
       </Header>
       <Container className="flex-1 px-4 py-12 md:px-6 md:py-20">
@@ -91,7 +91,7 @@ export default async function NovidadesPage() {
           </p>
           <h1 className="mt-2 text-4xl font-bold tracking-tight md:text-5xl">Novidades</h1>
           <p className="text-muted-foreground mt-4 max-w-xl text-base md:text-lg">
-            Tudo que foi adicionado, melhorado ou corrigido em cada versão do Tekoa.
+            Tudo que foi adicionado, melhorado ou corrigido em cada versão do Imovil.
           </p>
         </header>
 

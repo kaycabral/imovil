@@ -1,1 +1,1 @@
-export { getAdminAuth, getAdminDb } from '@tekoa/db'
+export { getAdminAuth, getAdminDb } from '@imovil/db'

@@ -14,7 +14,7 @@ import { PropertyCard } from './_components/property-card'
 import { applyFilters, type ListingFilters } from './_data/filters'
 
 export const metadata: Metadata = {
-  title: 'Alugue em Manaus — Tekoa',
+  title: 'Alugue em Manaus — Imovil',
   description:
     'Imóveis pra alugar em Manaus com o que importa no topo: preço total, bairro, distância e pet.',
 }
@@ -31,7 +31,7 @@ export default async function ListingPage({ searchParams }: { searchParams: Sear
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <Header>
-        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Tekoa</BrandLink>
+        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
         <AppMenu />
       </Header>
       <Container width="wide" className="flex-1 px-4 py-5 md:px-6 md:py-8">

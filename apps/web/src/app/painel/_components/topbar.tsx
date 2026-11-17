@@ -6,7 +6,7 @@ export function Topbar() {
   return (
     <Header>
       <BrandLink className="text-base font-bold tracking-tight md:text-lg">
-        Tekoa
+        Imovil
         <span className="text-muted-foreground ml-1.5 text-xs font-medium">/ painel</span>
       </BrandLink>
       <AppMenu />

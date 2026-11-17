@@ -1,6 +1,6 @@
 import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin'
 import { SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_NAME } from '@/lib/firebase/session-cookie'
-import { FieldValue } from '@tekoa/db'
+import { FieldValue } from '@imovil/db'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 

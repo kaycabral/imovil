@@ -31,7 +31,7 @@ describe('geocodeAddress', () => {
     expect(urlStr).toContain('format=json')
     expect(urlStr).toContain('limit=1')
     const headers = new Headers(init?.headers)
-    expect(headers.get('User-Agent')).toContain('tekoa')
+    expect(headers.get('User-Agent')).toContain('imovil')
   })
 
   it('snapa coords pra grade de 0.003° (~333m, próximo de 300m aproximado)', async () => {

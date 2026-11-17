@@ -1,6 +1,6 @@
 import { formatBRLFromCents } from '@/lib/money'
 import { Badge } from '@cbrl/design'
-import { propertyKindLabels, type Property } from '@tekoa/shared'
+import { propertyKindLabels, type Property } from '@imovil/shared'
 import Image from 'next/image'
 import Link from 'next/link'
 

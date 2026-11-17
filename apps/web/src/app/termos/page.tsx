@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Termos de uso — Tekoa',
-  description: 'Termos de uso da plataforma Tekoa.',
+  title: 'Termos de uso — Imovil',
+  description: 'Termos de uso da plataforma Imovil.',
 }
 
 const LAST_UPDATED = '2026-05-07'
@@ -19,13 +19,13 @@ export default function TermosPage() {
       <div className="prose prose-neutral dark:prose-invert mt-10 max-w-none">
         <h2>1. Aceitação</h2>
         <p>
-          Ao acessar o Tekoa você concorda com estes termos. Se discordar de qualquer parte, não use
-          o serviço.
+          Ao acessar o Imovil você concorda com estes termos. Se discordar de qualquer parte, não
+          use o serviço.
         </p>
 
         <h2>2. Sobre o serviço</h2>
         <p>
-          Tekoa é uma plataforma para corretores de imóveis (brokers) publicarem anúncios.
+          Imovil é uma plataforma para corretores de imóveis (brokers) publicarem anúncios.
           Visitantes podem navegar pelo catálogo público sem conta. Brokers precisam autenticar via
           Google para publicar.
         </p>
@@ -54,14 +54,14 @@ export default function TermosPage() {
 
         <h2>5. Propriedade intelectual</h2>
         <p>
-          O código, design e marca do Tekoa são nossos. Conteúdo publicado pelos brokers (fotos,
-          descrição) permanece do broker — concedem ao Tekoa licença não-exclusiva para hospedar e
+          O código, design e marca do Imovil são nossos. Conteúdo publicado pelos brokers (fotos,
+          descrição) permanece do broker — concedem ao Imovil licença não-exclusiva para hospedar e
           exibir enquanto o anúncio estiver ativo.
         </p>
 
         <h2>6. Limitação de responsabilidade</h2>
         <p>
-          Tekoa é uma plataforma de anúncios. Não somos parte das negociações entre broker e
+          Imovil é uma plataforma de anúncios. Não somos parte das negociações entre broker e
           interessado, não garantimos disponibilidade, preço ou condições do imóvel. Verifique
           informações diretamente com o broker.
         </p>

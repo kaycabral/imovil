@@ -8,7 +8,7 @@ import { formatBRLFromCents } from '@/lib/money'
 import { getBrokerByUid } from '@/lib/properties/broker'
 import { getPropertyBySlug } from '@/lib/properties/server'
 import { Badge, Button, Card, CardContent } from '@cbrl/design'
-import type { Property } from '@tekoa/shared'
+import type { Property } from '@imovil/shared'
 import { Car, MapPin, Package, PawPrint } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -22,9 +22,9 @@ type PageProps = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const p = await getPropertyBySlug(slug)
-  if (!p) return { title: 'Imóvel não encontrado — Tekoa' }
+  if (!p) return { title: 'Imóvel não encontrado — Imovil' }
   return {
-    title: `${p.title} — Tekoa`,
+    title: `${p.title} — Imovil`,
     description: p.subtitle,
     openGraph: {
       title: p.title,
@@ -50,7 +50,7 @@ export default async function PropertyPage({ params }: PageProps) {
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <Header>
-        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Tekoa</BrandLink>
+        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
         <AppMenu />
       </Header>
       {showOwnerStatusNotice && <OwnerStatusBanner status={property.status} />}

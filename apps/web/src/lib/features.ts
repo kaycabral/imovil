@@ -1,4 +1,4 @@
-import { getAdminRemoteConfig } from '@tekoa/db'
+import { getAdminRemoteConfig } from '@imovil/db'
 import { cache } from 'react'
 
 // Feature flags backed by Firebase Remote Config. New flags go here; the

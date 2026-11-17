@@ -1,6 +1,6 @@
 {
   "extends": "semantic-release-monorepo",
-  "tagFormat": "tekoa-v${version}",
+  "tagFormat": "imovil-v${version}",
   "branches": ["main"],
   "plugins": [
     "@semantic-release/commit-analyzer",

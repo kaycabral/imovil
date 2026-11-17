@@ -1,8 +1,8 @@
 import path from 'node:path'
 
 import { authEmulatorHost } from '@cbrl/testing/firebase'
+import { getAdminAuth } from '@imovil/db'
 import { test as base, expect } from '@playwright/test'
-import { getAdminAuth } from '@tekoa/db'
 
 import { BASE_URL, BROKER_DISPLAY_NAME } from './constants'
 import {

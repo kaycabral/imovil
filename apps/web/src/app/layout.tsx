@@ -12,7 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Tekoa — alugue seu próximo lugar',
+  title: 'Imovil — alugue seu próximo lugar',
   description:
     'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
 }

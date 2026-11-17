@@ -1,5 +1,5 @@
 {
-  "name": "@tekoa/web",
+  "name": "@imovil/web",
   "version": "0.1.0",
   "private": true,
   "license": "UNLICENSED",
@@ -7,8 +7,8 @@
     "dev": "next dev -p 3003",
     "build": "next build",
     "start": "next start",
-    "db:start": "npx -y firebase-tools emulators:start --project tekoa-local",
-    "db:exec": "npx -y firebase-tools emulators:exec --only firestore,auth,storage --project tekoa-local --config firebase.json",
+    "db:start": "npx -y firebase-tools emulators:start --project imovil-local",
+    "db:exec": "npx -y firebase-tools emulators:exec --only firestore,auth,storage --project imovil-local --config firebase.json",
     "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
     "lint": "next typegen && eslint .",
     "typecheck": "tsc --noEmit",
@@ -21,8 +21,8 @@
   "dependencies": {
     "@cbrl/design": "workspace:*",
     "@hookform/resolvers": "catalog:",
-    "@tekoa/db": "workspace:*",
-    "@tekoa/shared": "workspace:*",
+    "@imovil/db": "workspace:*",
+    "@imovil/shared": "workspace:*",
     "firebase": "catalog:",
     "firebase-admin": "catalog:",
     "lucide-react": "catalog:",

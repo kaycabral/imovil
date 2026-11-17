@@ -1,7 +1,7 @@
 import { TEST_IMAGE } from '@e2e/constants'
 import { expect, test } from '@e2e/fixtures'
 import { mockBrasilApi } from '@e2e/mocks'
-import { getAdminDb } from '@tekoa/db'
+import { getAdminDb } from '@imovil/db'
 
 test.use({ authAsBroker: true })
 

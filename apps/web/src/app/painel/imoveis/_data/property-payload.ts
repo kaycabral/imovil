@@ -2,7 +2,7 @@
 // extracted from the 'use client' component so the description parsing and the
 // values→payload assembly are importable + unit-tested. No React, no I/O.
 
-import { type PropertyCreateInput, type PropertyImage } from '@tekoa/shared'
+import { type PropertyCreateInput, type PropertyImage } from '@imovil/shared'
 import { type PropertyFormValues } from './property-form-schema'
 
 // Split the free-text description into paragraph blocks: separated by one or

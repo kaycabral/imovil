@@ -12,7 +12,7 @@ import {
 } from '../../_components/property-form'
 
 export const metadata: Metadata = {
-  title: 'Editar imóvel — Tekoa',
+  title: 'Editar imóvel — Imovil',
 }
 
 type PageProps = { params: Promise<{ id: string }> }

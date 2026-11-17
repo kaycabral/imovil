@@ -1,5 +1,5 @@
-# Cloud Build: build the tekoa image (Next standalone) and push to AR.
-# Triggered from the GitLab `deploy:tekoa` job. Context = repo root.
+# Cloud Build: build the imovil image (Next standalone) and push to AR.
+# Triggered from the GitLab `deploy:imovil` job. Context = repo root.
 # Uses the shared docker/cloudrun.Dockerfile (parameterized by APP_SCOPE/APP_PATH).
 #
 # NEXT_PUBLIC_* are public Firebase web config (project cbrl-tekoa-production)
@@ -16,8 +16,8 @@ steps:
       - -c
       - |
         docker build -f docker/cloudrun.Dockerfile \
-          --build-arg APP_SCOPE=@tekoa/web \
-          --build-arg APP_PATH=apps/tekoa \
+          --build-arg APP_SCOPE=@imovil/web \
+          --build-arg APP_PATH=apps/imovil \
           --build-arg NEXT_PUBLIC_FIREBASE_API_KEY="$$API_KEY" \
           --build-arg NEXT_PUBLIC_MAPTILER_API_KEY="$$MAPTILER_KEY" \
           --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=cbrl-tekoa-production.firebaseapp.com \

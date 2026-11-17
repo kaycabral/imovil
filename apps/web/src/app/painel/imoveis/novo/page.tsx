@@ -6,7 +6,7 @@ import { PageHeader } from '../../_components/page-header'
 import { PropertyForm, type PropertyFormProfile } from '../_components/property-form'
 
 export const metadata: Metadata = {
-  title: 'Novo imóvel — Tekoa',
+  title: 'Novo imóvel — Imovil',
 }
 
 export default async function NewPropertyPage() {
