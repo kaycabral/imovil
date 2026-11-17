@@ -1,7 +1,6 @@
 {
   "projects": {
-    "default": "cbrl-tekoa-staging-2",
-    "staging": "cbrl-tekoa-staging-2",
-    "production": "cbrl-tekoa-production"
+    "default": "tekoa-7c6d2",
+    "production": "tekoa-7c6d2"
   }
 }

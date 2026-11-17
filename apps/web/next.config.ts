@@ -55,16 +55,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
-  // App Hosting copies `.next/standalone` into the Cloud Run image. Set
-  // explicitly so the standalone artifacts always land, regardless of which
-  // builder produced them.
-  output: 'standalone',
-  // No `outputFileTracingRoot` pin: with Turborepo (turbo.json at the repo root),
-  // the App Hosting buildpack switches into its Turborepo runner, which expects
-  // the standalone bundle laid out as `apps/web/.next/standalone/apps/web/.next/...`
-  // (workspace prefix preserved). Letting Next auto-detect the monorepo root from
-  // the lockfile produces exactly that layout, so the adapter can locate the
-  // routes manifest.
   // 127.0.0.1: Playwright browser (CI). ideapad.local: dev access from LAN hostname.
   allowedDevOrigins: ['127.0.0.1', 'ideapad.local'],
   images: {
