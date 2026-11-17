@@ -1,5 +1,5 @@
 import { expect, test } from '@e2e/fixtures'
-import { getAdminDb } from '@tekoa/db'
+import { getAdminDb } from '@imovil/db'
 
 test.use({ authAsBroker: true })
 

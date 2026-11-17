@@ -1,4 +1,4 @@
-import type { Property } from '@tekoa/shared'
+import type { Property } from '@imovil/shared'
 import { describe, expect, it } from 'vitest'
 import { applyFilters } from './filters'
 

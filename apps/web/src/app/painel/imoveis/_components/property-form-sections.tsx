@@ -10,7 +10,7 @@ import {
   SelectValue,
   Textarea,
 } from '@cbrl/design'
-import { propertyKindLabels, type PropertyImage } from '@tekoa/shared'
+import { propertyKindLabels, type PropertyImage } from '@imovil/shared'
 import { Loader2, Trash2, Upload } from 'lucide-react'
 import Image from 'next/image'
 import { type UseFormReturn } from 'react-hook-form'

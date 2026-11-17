@@ -7,7 +7,7 @@ const base = {
   role: 'Corretora responsável',
   creci: 'CRECI-AM 4.340-F',
   phone: '+55 92 98422-0188',
-  whatsappText: 'Olá Juliana, vi o imóvel pelo Tekoa.',
+  whatsappText: 'Olá Juliana, vi o imóvel pelo Imovil.',
   avatar: 'https://images.unsplash.com/photo-xyz',
 }
 

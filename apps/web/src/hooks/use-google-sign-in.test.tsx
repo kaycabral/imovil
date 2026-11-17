@@ -59,8 +59,11 @@ vi.mock('firebase/auth', () => ({
   signInWithPopup: vi.fn(),
 }))
 
+let firebaseConfigured = true
+
 vi.mock('@/lib/firebase/client', () => ({
   getClientAuth: () => ({}),
+  isClientFirebaseConfigured: () => firebaseConfigured,
 }))
 
 const toastError = vi.fn()
@@ -78,6 +81,17 @@ describe('useGoogleSignIn', () => {
     vi.clearAllMocks()
     vi.unstubAllGlobals()
     searchParams = new URLSearchParams()
+    firebaseConfigured = true
+  })
+
+  it('does not open the popup when Firebase is not configured', async () => {
+    firebaseConfigured = false
+
+    const { result } = renderHook(() => useGoogleSignIn())
+    await result.current.signIn()
+
+    expect(signInWithPopup).not.toHaveBeenCalled()
+    expect(toastError).toHaveBeenCalledWith(expect.stringContaining('Login indisponível'))
   })
 
   it('refreshes the router when no next param is set', async () => {

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { Topbar } from './_components/topbar'
 
 export const metadata: Metadata = {
-  title: 'Painel do corretor — Tekoa',
+  title: 'Painel do corretor — Imovil',
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

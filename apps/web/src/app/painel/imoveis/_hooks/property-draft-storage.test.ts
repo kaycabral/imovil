@@ -1,4 +1,4 @@
-import type { PropertyImage } from '@tekoa/shared'
+import type { PropertyImage } from '@imovil/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PostalCodeLookup, PropertyFormValues } from '../_data/property-form-schema'
 import {

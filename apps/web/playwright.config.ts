@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 import { BASE_URL, E2E_PORT } from './e2e/constants'
 
-const PROJECT_ID = 'tekoa-local'
+const PROJECT_ID = 'imovil-local'
 
 export default defineConfig({
   testDir: './src',

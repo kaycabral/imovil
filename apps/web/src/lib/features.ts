@@ -1,4 +1,5 @@
-import { getAdminRemoteConfig } from '@tekoa/db'
+import { readBackend } from '@/lib/backend-read'
+import { getAdminRemoteConfig } from '@imovil/db'
 import { cache } from 'react'
 
 // Feature flags backed by Firebase Remote Config. New flags go here; the
@@ -13,8 +14,6 @@ export type Features = {
 const DEFAULTS: Features = {
   leads: false,
 }
-
-const FETCH_TIMEOUT_MS = 4_000
 
 /**
  * Fetches the Remote Config server template, evaluates it, and returns a
@@ -31,18 +30,12 @@ export const getFeatures = cache(async (): Promise<Features> => {
     return DEFAULTS
   }
 
-  try {
-    const template = await Promise.race([
-      getAdminRemoteConfig().getServerTemplate(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('remote-config timeout')), FETCH_TIMEOUT_MS),
-      ),
-    ])
-    const config = template.evaluate()
-    return {
-      leads: config.getBoolean('feature_leads'),
-    }
-  } catch {
-    return DEFAULTS
+  const result = await readBackend('remote-config', () =>
+    getAdminRemoteConfig().getServerTemplate(),
+  )
+  if (!result.ok) return DEFAULTS
+  const config = result.data.evaluate()
+  return {
+    leads: config.getBoolean('feature_leads'),
   }
 })

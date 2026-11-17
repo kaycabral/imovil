@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { getClientAuth } from '@/lib/firebase/client'
+import { getClientAuth, isClientFirebaseConfigured } from '@/lib/firebase/client'
 
 function safeNext(raw: string | null): string | null {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return null
@@ -20,6 +20,10 @@ export function useGoogleSignIn() {
 
   async function signIn() {
     if (loading) return
+    if (!isClientFirebaseConfigured()) {
+      toast.error('Login indisponível no momento. Tenta de novo mais tarde.')
+      return
+    }
     setLoading(true)
     try {
       const result = await signInWithPopup(getClientAuth(), new GoogleAuthProvider())

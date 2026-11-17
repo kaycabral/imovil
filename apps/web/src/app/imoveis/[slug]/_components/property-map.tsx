@@ -1,6 +1,6 @@
 'use client'
 
-import type { PropertyCoords } from '@tekoa/shared'
+import type { PropertyCoords } from '@imovil/shared'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useMemo } from 'react'
 import Map, { Layer, Source } from 'react-map-gl/maplibre'

@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@cbrl/design'
-import type { PropertyStatus } from '@tekoa/shared'
+import type { PropertyStatus } from '@imovil/shared'
 import { MoreHorizontal } from 'lucide-react'
 import type { Route } from 'next'
 import Link from 'next/link'

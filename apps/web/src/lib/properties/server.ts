@@ -1,7 +1,7 @@
 import { getAdminDb } from '@/lib/firebase/admin'
 import { docData, queryDocData } from '@/lib/firestore'
-import { Timestamp } from '@tekoa/db'
-import type { Property, PropertyStatus } from '@tekoa/shared'
+import { Timestamp } from '@imovil/db'
+import type { Property, PropertyStatus } from '@imovil/shared'
 
 const COLLECTION = 'properties'
 

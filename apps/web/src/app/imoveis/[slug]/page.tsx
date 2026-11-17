@@ -1,30 +1,40 @@
 import { AppMenu } from '@/components/app-menu'
+import { BackendUnavailable } from '@/components/backend-unavailable'
 import { BrandLink } from '@/components/brand-link'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
+import { readBackend } from '@/lib/backend-read'
 import { getServerUser } from '@/lib/firebase/server'
 import { formatBRLFromCents } from '@/lib/money'
 import { getBrokerByUid } from '@/lib/properties/broker'
 import { getPropertyBySlug } from '@/lib/properties/server'
 import { Badge, Button, Card, CardContent } from '@cbrl/design'
-import type { Property } from '@tekoa/shared'
+import type { Property } from '@imovil/shared'
 import { Car, MapPin, Package, PawPrint } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { cache } from 'react'
 import { Broker } from './_components/broker'
 import { Gallery } from './_components/gallery'
 import { PropertyMap } from './_components/property-map'
 
 type PageProps = { params: Promise<{ slug: string }> }
 
+// Shared by generateMetadata + the page so one request reads Firestore once.
+const loadProperty = cache((slug: string) =>
+  readBackend(`property ${slug}`, () => getPropertyBySlug(slug)),
+)
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const p = await getPropertyBySlug(slug)
-  if (!p) return { title: 'Imóvel não encontrado — Tekoa' }
+  const result = await loadProperty(slug)
+  if (!result.ok) return { title: 'Imovil' }
+  const p = result.data
+  if (!p) return { title: 'Imóvel não encontrado — Imovil' }
   return {
-    title: `${p.title} — Tekoa`,
+    title: `${p.title} — Imovil`,
     description: p.subtitle,
     openGraph: {
       title: p.title,
@@ -36,7 +46,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PropertyPage({ params }: PageProps) {
   const { slug } = await params
-  const property = await getPropertyBySlug(slug)
+  const result = await loadProperty(slug)
+  if (!result.ok) return <UnavailablePage />
+  const property = result.data
   if (!property) notFound()
 
   const viewer = await getServerUser()
@@ -45,12 +57,14 @@ export default async function PropertyPage({ params }: PageProps) {
   if (property.status !== 'published' && !isOwner) notFound()
   const showOwnerStatusNotice = isOwner && property.status !== 'published'
 
-  const broker = await getBrokerByUid(property.ownerUid)
+  // Broker card is optional: if the profile read fails the listing still renders.
+  const brokerRead = await readBackend('broker', () => getBrokerByUid(property.ownerUid))
+  const broker = brokerRead.ok ? brokerRead.data : null
 
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <Header>
-        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Tekoa</BrandLink>
+        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
         <AppMenu />
       </Header>
       {showOwnerStatusNotice && <OwnerStatusBanner status={property.status} />}
@@ -74,6 +88,21 @@ export default async function PropertyPage({ params }: PageProps) {
             )}
           </aside>
         </div>
+      </Container>
+      <Footer />
+    </main>
+  )
+}
+
+function UnavailablePage() {
+  return (
+    <main className="bg-background text-foreground flex min-h-screen flex-col">
+      <Header>
+        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
+        <AppMenu />
+      </Header>
+      <Container className="flex-1 p-5 md:p-8">
+        <BackendUnavailable title="Não conseguimos carregar este imóvel agora" />
       </Container>
       <Footer />
     </main>

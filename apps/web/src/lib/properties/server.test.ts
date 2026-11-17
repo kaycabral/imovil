@@ -13,7 +13,7 @@ class FakeTimestamp {
     return new Date(this.ms)
   }
 }
-vi.mock('@tekoa/db', () => ({
+vi.mock('@imovil/db', () => ({
   Timestamp: FakeTimestamp,
 }))
 

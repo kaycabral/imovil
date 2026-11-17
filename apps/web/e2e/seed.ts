@@ -1,5 +1,5 @@
-import { FieldValue, getAdminDb } from '@tekoa/db'
-import { propertyCreateSchema, type PropertyCreateInput, type PropertyStatus } from '@tekoa/shared'
+import { FieldValue, getAdminDb } from '@imovil/db'
+import { propertyCreateSchema, type PropertyCreateInput, type PropertyStatus } from '@imovil/shared'
 
 type SeedProfileInput = {
   phone?: string
@@ -67,7 +67,7 @@ export type SeededProperty = { id: string; slug: string }
 
 export async function seedProperty(input: SeedPropertyInput): Promise<SeededProperty> {
   // Parse catches drift between seed defaults and PropertyCreateInput shape —
-  // any schema change in @tekoa/shared that breaks the seed fails loudly here.
+  // any schema change in @imovil/shared that breaks the seed fails loudly here.
   const data = propertyCreateSchema.parse({ ...defaultInput, ...input.overrides })
 
   const db = getAdminDb()
@@ -83,7 +83,7 @@ export async function seedProperty(input: SeedPropertyInput): Promise<SeededProp
     role: 'Corretor responsável',
     creci: 'CRECI-E2E-123',
     phone: '92999990000',
-    whatsappText: 'Olá, vi o imóvel pelo Tekoa e queria agendar uma visita.',
+    whatsappText: 'Olá, vi o imóvel pelo Imovil e queria agendar uma visita.',
     avatar: 'http://127.0.0.1:9199/broker-avatar.jpg',
   }
 

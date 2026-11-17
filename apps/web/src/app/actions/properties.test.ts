@@ -1,4 +1,4 @@
-import type { Property, PropertyCreateInput, PropertyStatus } from '@tekoa/shared'
+import type { Property, PropertyCreateInput, PropertyStatus } from '@imovil/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // The doc payload the action writes to Firestore: the stored property shape
@@ -22,7 +22,7 @@ vi.mock('@/lib/firebase/admin', () => ({
 vi.mock('next/cache', () => ({
   revalidatePath: (path: string) => revalidatePath(path),
 }))
-vi.mock('@tekoa/db', () => ({
+vi.mock('@imovil/db', () => ({
   FieldValue: { serverTimestamp: () => 'SERVER_TS' },
 }))
 

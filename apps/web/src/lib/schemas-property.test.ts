@@ -1,4 +1,4 @@
-import { propertyCreateSchema } from '@tekoa/shared'
+import { propertyCreateSchema } from '@imovil/shared'
 import { describe, expect, it } from 'vitest'
 
 function validInput() {

@@ -14,7 +14,7 @@ service cloud.firestore {
     }
 
     match /properties/{propertyId} {
-      // PUBLIC READ INTENCIONAL: tekoa é catálogo público de imóveis listados
+      // PUBLIC READ INTENCIONAL: imovil é catálogo público de imóveis listados
       // por brokers. Endereço, preço e descrição são publicados explicitamente
       // pelo broker — equivalente a anúncio em portal imobiliário.
       // PII sensível do broker (telefone, CRECI) está em /users e exige auth.

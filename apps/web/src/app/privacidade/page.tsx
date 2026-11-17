@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacidade — Tekoa',
-  description: 'Política de privacidade do Tekoa.',
+  title: 'Privacidade — Imovil',
+  description: 'Política de privacidade do Imovil.',
 }
 
 const LAST_UPDATED = '2026-05-07'
@@ -18,13 +18,13 @@ export default function PrivacidadePage() {
 
       <div className="prose prose-neutral dark:prose-invert mt-10 max-w-none">
         <p>
-          Esta política descreve como o Tekoa trata seus dados. Postura: rigorosa em relação à LGPD
+          Esta política descreve como o Imovil trata seus dados. Postura: rigorosa em relação à LGPD
           (Lei 13.709/2018) — segurança e minimização de dados são pilares do produto desde o dia 1.
         </p>
 
         <h2>O que coletamos</h2>
         <p>
-          Tekoa é uma plataforma de anúncios de imóveis. Coletamos diferentes dados conforme você é
+          Imovil é uma plataforma de anúncios de imóveis. Coletamos diferentes dados conforme você é
           visitante público ou broker autenticado:
         </p>
 

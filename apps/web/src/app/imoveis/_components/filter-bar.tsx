@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cbrl/design'
-import { propertyKindLabels } from '@tekoa/shared'
+import { propertyKindLabels } from '@imovil/shared'
 import { Search } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useState } from 'react'

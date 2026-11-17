@@ -1,4 +1,4 @@
-import type { PropertyCoords } from '@tekoa/shared'
+import type { PropertyCoords } from '@imovil/shared'
 import { z } from 'zod'
 
 // Nominatim devolve um array; só lat/lon nos interessam. Itens malformados são
@@ -36,7 +36,7 @@ export async function geocodeAddress(query: GeocodeQuery): Promise<PropertyCoord
 
   try {
     const res = await fetch(url.toString(), {
-      headers: { 'User-Agent': 'tekoa-server/1.0 (contact: dev@tekoa.com.br)' },
+      headers: { 'User-Agent': 'imovil-server/1.0 (contact: dev@imovil.com.br)' },
     })
     if (!res.ok) return null
     const data = nominatimResponseSchema.parse(await res.json())

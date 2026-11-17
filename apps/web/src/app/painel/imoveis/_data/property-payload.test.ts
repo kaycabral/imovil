@@ -1,4 +1,4 @@
-import { type PropertyImage } from '@tekoa/shared'
+import { type PropertyImage } from '@imovil/shared'
 import { describe, expect, it } from 'vitest'
 import { PROPERTY_FORM_DEFAULTS, type PropertyFormValues } from './property-form-schema'
 import { buildPropertyPayload, parseDescription } from './property-payload'

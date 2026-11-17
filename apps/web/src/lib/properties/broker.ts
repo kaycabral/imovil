@@ -1,5 +1,5 @@
 import { getAdminDb } from '@/lib/firebase/admin'
-import type { PropertyBroker } from '@tekoa/shared'
+import type { PropertyBroker } from '@imovil/shared'
 import { cache } from 'react'
 
 type UserDoc = {
@@ -29,7 +29,7 @@ export const getBrokerByUid = cache(async (uid: string): Promise<PropertyBroker 
     role: 'Corretor responsável',
     creci: profile.creci,
     phone: profile.phone,
-    whatsappText: `Olá ${firstName}, vi o imóvel pelo Tekoa e queria agendar uma visita.`,
+    whatsappText: `Olá ${firstName}, vi o imóvel pelo Imovil e queria agendar uma visita.`,
     avatar: profile.avatarUrl ?? null,
   }
 })

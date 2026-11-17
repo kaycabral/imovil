@@ -1,4 +1,4 @@
-import { propertyDealSchema, propertyKindSchema, type PropertyImage } from '@tekoa/shared'
+import { propertyDealSchema, propertyKindSchema, type PropertyImage } from '@imovil/shared'
 import { z } from 'zod'
 
 // Schema de validação do form (UI). Campos derivados (description array, details, broker.role/whatsappText)

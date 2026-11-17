@@ -3,13 +3,13 @@
 import { getAdminDb } from '@/lib/firebase/admin'
 import { getServerUser } from '@/lib/firebase/server'
 import { geocodeAddress } from '@/lib/geocode'
-import { FieldValue } from '@tekoa/db'
+import { FieldValue } from '@imovil/db'
 import {
   propertyCreateSchema,
   propertyStatusSchema,
   type PropertyCreateInput,
   type PropertyStatus,
-} from '@tekoa/shared'
+} from '@imovil/shared'
 import { revalidatePath } from 'next/cache'
 
 const COLLECTION = 'properties'

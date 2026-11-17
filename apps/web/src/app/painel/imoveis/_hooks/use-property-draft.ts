@@ -1,6 +1,6 @@
 'use client'
 
-import { type PropertyImage } from '@tekoa/shared'
+import { type PropertyImage } from '@imovil/shared'
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from 'react'
 import { type UseFormReturn } from 'react-hook-form'
 import {

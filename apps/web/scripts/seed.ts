@@ -4,14 +4,14 @@
 // `pnpm db:seed` while `pnpm db:start` is up). Clears this seed's own
 // properties first, then re-creates a fixed set; never touches other owners.
 
-import { getAdminAuth, getAdminDb } from '@tekoa/db'
-import type { PropertyCreateInput } from '@tekoa/shared'
+import { getAdminAuth, getAdminDb } from '@imovil/db'
+import type { PropertyCreateInput } from '@imovil/shared'
 
 import { seedProfile, seedProperty } from '../e2e/seed'
 
 const OWNER = {
   uid: 'dev-seed-broker',
-  email: 'corretor.dev@tekoa.local',
+  email: 'corretor.dev@imovil.local',
   displayName: 'Corretor Dev',
 }
 const PORT = 3003
@@ -131,7 +131,7 @@ async function seed(): Promise<void> {
     const images = [
       {
         path: `seed/${i}.jpg`,
-        src: `https://picsum.photos/seed/tekoa-${i}/1200/800`,
+        src: `https://picsum.photos/seed/imovil-${i}/1200/800`,
         alt: listing.title,
       },
     ]
@@ -150,7 +150,7 @@ seed()
   .then(() => {
     const line = '─'.repeat(64)
     console.log(`\n${line}`)
-    console.log('✅ Seed concluído — Tekoa')
+    console.log('✅ Seed concluído — Imovil')
     console.log(line)
     console.log(`  Listagem:     http://127.0.0.1:${PORT}/imoveis`)
     console.log(`  ${LISTINGS.length} imóveis publicados (apartment · house · studio · kitnet)`)
