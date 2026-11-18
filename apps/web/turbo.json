@@ -3,13 +3,12 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "passThroughEnv": [
-        "POSTGRES_URL",
+      "env": [
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-        "IMOVIL_FEATURE_LEADS",
-        "VERCEL_GIT_COMMIT_SHA"
-      ]
+        "NEXT_PUBLIC_MAPTILER_API_KEY"
+      ],
+      "passThroughEnv": ["POSTGRES_URL", "IMOVIL_FEATURE_LEADS", "VERCEL_GIT_COMMIT_SHA"]
     }
   }
 }
