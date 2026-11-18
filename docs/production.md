@@ -8,6 +8,7 @@ Runbook do ambiente de produção do imovil: o que roda onde, como mudança cheg
 | ----------------------- | -------------------------------------------------------------- |
 | App (Next.js)           | Vercel, Root Directory `apps/web`, domínio `imovil.vercel.app` |
 | Postgres, Auth, Storage | Supabase, região `sa-east-1` (São Paulo)                       |
+| Funções (SSR, actions)  | Vercel `gru1` (São Paulo), fixado em `apps/web/vercel.json`    |
 | Login                   | Só Google (provider Google do Supabase Auth)                   |
 | Migrations              | GitHub Actions, job `migrate-production` do `ci.yml`           |
 
