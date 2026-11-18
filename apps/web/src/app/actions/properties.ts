@@ -37,8 +37,7 @@ async function requireBrokerProfile(userId: string): Promise<BrokerGate> {
 }
 
 export type CreatePropertyResult =
-  | { ok: true; id: string; slug: string }
-  | { ok: false; error: string }
+  { ok: true; id: string; slug: string } | { ok: false; error: string }
 
 function slugify(input: string): string {
   return input

@@ -1,10 +1,11 @@
 version: 2
 updates:
+  # pnpm workspace: run from the root only. The root job reads
+  # pnpm-workspace.yaml, updates every workspace package.json (and the catalog)
+  # together with pnpm-lock.yaml. Per-workspace directories never see the root
+  # lockfile, so their PRs fail `pnpm install --frozen-lockfile`.
   - package-ecosystem: npm
-    directories:
-      - /
-      - /apps/*
-      - /packages/*
+    directory: /
     schedule:
       interval: weekly
       day: monday

@@ -1,11 +1,27 @@
 'use client'
 
 import type { PropertyCoords } from '@imovil/shared'
+import type * as MapLibre from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useMemo } from 'react'
 import Map, { Layer, Source } from 'react-map-gl/maplibre'
 
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_API_KEY
+
+// maplibre-gl 6 is ESM-only and, under a bundler, needs its worker URL set once
+// (official Next.js/Turbopack setup): the static `new URL(…, import.meta.url)`
+// makes Next emit the worker as a hashed same-origin asset (`worker-src 'self'`).
+// Loaded lazily so the library stays out of SSR, as react-map-gl did before.
+let mapLibPromise: Promise<typeof MapLibre> | undefined
+function loadMapLib() {
+  mapLibPromise ??= import('maplibre-gl').then((maplibre) => {
+    maplibre.setWorkerUrl(
+      new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString(),
+    )
+    return maplibre
+  })
+  return mapLibPromise
+}
 
 /**
  * Renderiza um círculo de ~300m centrado nas coords (já arredondadas pra ~100m no create).
@@ -37,6 +53,7 @@ export function PropertyMap({ coords }: { coords: PropertyCoords }) {
   return (
     <div className="bg-muted border-border/60 aspect-[16/10] w-full overflow-hidden rounded-xl border">
       <Map
+        mapLib={loadMapLib()}
         initialViewState={{ latitude: coords.lat, longitude: coords.lng, zoom: 14 }}
         mapStyle={`https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`}
         attributionControl={false}
