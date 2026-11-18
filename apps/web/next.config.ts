@@ -56,10 +56,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
-  // `@cbrl/pg` lazy-imports its optional peer `@google-cloud/cloud-sql-connector`
-  // (Cloud SQL IAM mode only). imovil runs password mode and does not install it,
-  // so load the package with Node's resolver instead of bundling that import.
-  serverExternalPackages: ['@cbrl/pg'],
   env: {
     NEXT_PUBLIC_COMMIT_SHA: commitSha,
   },

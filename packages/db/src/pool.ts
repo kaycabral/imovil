@@ -16,14 +16,10 @@ import * as schema from './schema'
  * Password mode only: `POSTGRES_URL` is the name the Supabase ↔ Vercel
  * integration injects (transaction pooler, port 6543). Supabase hosts are
  * verified against the pinned root CA (`supabaseSsl`), and the URL's `ssl*`
- * params are stripped so they cannot override that pin. imovil never sets the
- * IAM env var, so the Cloud SQL connector path stays off.
+ * params are stripped so they cannot override that pin.
  */
 const POOL_CONFIG: PoolEnvConfig = {
   connectionStringEnvVar: 'POSTGRES_URL',
-  iamAuthEnvVar: 'IMOVIL_DB_USE_IAM_AUTH',
-  instanceEnvVar: 'IMOVIL_DB_CLOUDSQL_INSTANCE',
-  iamUserEnvVar: 'IMOVIL_DB_IAM_USER',
   database: 'imovil',
   passwordModeSsl: supabaseSsl,
 }
