@@ -17,7 +17,7 @@ Runbook do ambiente de produção do imovil: o que roda onde, como mudança cheg
 ## Fluxo de uma mudança
 
 1. PR → CI: lint, typecheck, unit, suíte Postgres + build contra o stack local (migrations aplicadas do zero), e o job `migrations` (journal consistente, `schema.ts` sem drift, migrations da `main` imutáveis).
-2. Merge na `main` → CI roda de novo; com tudo verde, `migrate-production` aplica as migrations pendentes em prod (no-op quando não há).
+2. Merge na `main` → CI roda de novo (checks, integração Postgres, migrations e E2E); com tudo verde, `migrate-production` aplica as migrations pendentes em prod (no-op quando não há). Se algum job falhar, `migrate-production` **falha** em vez de ser pulado (um check "skipped" passaria no Deployment Check da Vercel).
 3. Vercel builda o mesmo commit e só promove pra produção depois do check `migrate-production` passar (Deployment Checks). O código novo nunca entra no ar antes do schema que ele usa.
 
 ## Regras de migration
