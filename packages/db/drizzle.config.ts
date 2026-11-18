@@ -1,6 +1,6 @@
-import { stripSslParams, supabaseSsl } from '@cbrl/db'
-import { requireEnvOneOf } from '@cbrl/env'
+import { requireEnvOneOf } from '@imovil/env'
 import { defineConfig } from 'drizzle-kit'
+import { stripSslParams, supabaseSsl } from './src/supabase'
 
 /**
  * drizzle-kit config for imovil's Postgres (Supabase).

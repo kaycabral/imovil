@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Card } from '@cbrl/design'
+import { Button, Card } from '@imovil/design'
 import { CloudOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 

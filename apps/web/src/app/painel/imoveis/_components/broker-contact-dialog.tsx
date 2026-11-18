@@ -11,7 +11,7 @@ import {
   DialogTitle,
   Input,
   Label,
-} from '@cbrl/design'
+} from '@imovil/design'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 

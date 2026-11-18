@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "next-imovil": {
+      "type": "http",
+      "url": "http://localhost:3003/_next/mcp"
+    }
+  }
+}

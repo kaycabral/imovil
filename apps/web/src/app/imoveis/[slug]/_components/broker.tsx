@@ -1,5 +1,5 @@
 import { initials } from '@/lib/initials'
-import { Button, Card, CardContent } from '@cbrl/design'
+import { Button, Card, CardContent } from '@imovil/design'
 import Image from 'next/image'
 
 type Props = {

@@ -1,4 +1,4 @@
-@import '@cbrl/design/globals.css';
+@import '@imovil/design/globals.css';
 @plugin '@tailwindcss/typography';
 
 @theme inline {

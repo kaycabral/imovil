@@ -1,5 +1,5 @@
 import { Container } from '@/components/container'
-import { Card, CardContent, Skeleton } from '@cbrl/design'
+import { Card, CardContent, Skeleton } from '@imovil/design'
 import { PageHeaderSkeleton } from '../../_components/page-header-skeleton'
 
 // Novo imóvel: 5 sections empilhadas (Anúncio, Localização, Valores, Características, Imagens).

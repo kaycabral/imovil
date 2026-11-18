@@ -1,5 +1,5 @@
 import { Container } from '@/components/container'
-import { Card, CardContent, Skeleton } from '@cbrl/design'
+import { Card, CardContent, Skeleton } from '@imovil/design'
 import { PageHeaderSkeleton } from '../_components/page-header-skeleton'
 
 // Perfil: card de identidade (avatar + nome/email) + card de contato (2 inputs + botão).

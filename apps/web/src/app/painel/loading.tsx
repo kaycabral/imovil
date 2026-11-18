@@ -1,5 +1,5 @@
 import { Container } from '@/components/container'
-import { Card, CardContent, Skeleton } from '@cbrl/design'
+import { Card, CardContent, Skeleton } from '@imovil/design'
 import { PageHeaderSkeleton } from './_components/page-header-skeleton'
 
 // Visão geral: 4 métricas + 4 cards de imóveis + lista de leads.

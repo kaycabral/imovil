@@ -1,3 +1,3 @@
-import cbrlBase from '@cbrl/eslint-base'
+import baseConfig from '@imovil/eslint-config'
 
-export default cbrlBase
+export default baseConfig

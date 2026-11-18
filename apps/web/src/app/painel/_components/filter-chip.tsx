@@ -1,4 +1,4 @@
-import { Button } from '@cbrl/design'
+import { Button } from '@imovil/design'
 import Link from 'next/link'
 
 export function FilterChipRow({ children }: { children: React.ReactNode }) {

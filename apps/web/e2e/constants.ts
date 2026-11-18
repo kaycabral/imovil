@@ -10,5 +10,5 @@ export const BASE_URL = `http://127.0.0.1:${E2E_PORT}`
 // (`broker-w<workerIndex>@e2e.test`); only the shared display name lives here.
 export const BROKER_DISPLAY_NAME = 'Broker E2E'
 
-// Resolves from apps/imovil/ (Playwright's cwd when invoked via `pnpm test:e2e`).
+// Resolves from apps/web/ (Playwright's cwd when invoked via `pnpm test:e2e`).
 export const TEST_IMAGE = path.resolve(process.cwd(), 'e2e/test-data/foto.jpg')

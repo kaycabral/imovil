@@ -10,10 +10,11 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "@cbrl/tsconfig-base": "workspace:*",
+    "@imovil/tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

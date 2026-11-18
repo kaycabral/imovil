@@ -22,8 +22,8 @@
     "type-coverage": "type-coverage --at-least 98 --strict --ignore-catch"
   },
   "dependencies": {
-    "@cbrl/design": "workspace:*",
-    "@cbrl/env": "workspace:*",
+    "@imovil/design": "workspace:*",
+    "@imovil/env": "workspace:*",
     "@hookform/resolvers": "catalog:",
     "@imovil/db": "workspace:*",
     "@imovil/shared": "workspace:*",
@@ -45,9 +45,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@cbrl/eslint-base": "workspace:*",
-    "@cbrl/testing": "workspace:*",
-    "@cbrl/tsconfig-base": "workspace:*",
+    "@imovil/eslint-config": "workspace:*",
+    "@imovil/testing": "workspace:*",
+    "@imovil/tsconfig": "workspace:*",
     "@playwright/test": "catalog:",
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
@@ -58,6 +58,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "eslint-config-next": "catalog:",
     "jsdom": "catalog:",
     "supabase": "3.0.0",

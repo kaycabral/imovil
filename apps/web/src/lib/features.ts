@@ -1,4 +1,4 @@
-import { readEnvFlag } from '@cbrl/env'
+import { readEnvFlag } from '@imovil/env'
 
 // Feature flags read from env (per Vercel environment). New flags go here as
 // `IMOVIL_FEATURE_<NAME>`; unset means off.

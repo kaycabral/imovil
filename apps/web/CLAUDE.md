@@ -1,22 +1,22 @@
-# apps/imovil — Frontend (@imovil/web)
+# apps/web — Frontend (@imovil/web)
 
 ## Escopo
 
-Modifique APENAS arquivos dentro de `apps/imovil/` e `packages/imovil/shared/` quando adicionar tipos compartilhados.
+Modifique APENAS arquivos dentro de `apps/web/` e `packages/shared/` quando adicionar tipos compartilhados.
 
 ## Aliases (cross-workspace)
 
 - `@imovil/<pkg>` (resolvido via pnpm workspaces). Ex.: `import type { Profile } from '@imovil/shared'`.
 - `@e2e/*` resolve para `./e2e/*` (definido em `tsconfig.json`).
-- `@cbrl/design` para primitivas UI + `cn` helper.
+- `@imovil/design` para primitivas UI + `cn` helper.
 
 ## Design system
 
-Design system canônico é `@cbrl/design` (em `packages/design/`) — toda primitiva UI vem de lá (`Button`, `Card`, `Dialog`, `DropdownMenu`, `Input`, `Label`, `Avatar`, `Badge`, `Skeleton`, `Switch`, `Textarea`, `Toaster`, `Select`, `Sheet`). Helper `cn` também vem do `@cbrl/design`.
+Design system canônico é `@imovil/design` (em `packages/design/`) — toda primitiva UI vem de lá (`Button`, `Card`, `Dialog`, `DropdownMenu`, `Input`, `Label`, `Avatar`, `Badge`, `Skeleton`, `Switch`, `Textarea`, `Toaster`, `Select`, `Sheet`). Helper `cn` também vem do `@imovil/design`.
 
-- **Não copie** componentes do design pra `src/components/ui/` — sempre importe: `import { Button } from '@cbrl/design'`.
-- Se precisar de variante específica que o design não tem, primeiro avalie se faz sentido adicionar ao `@cbrl/design`.
-- **Componentes inline em imovil**: hoje só `form.tsx` fica em `src/components/ui/` — é wrapper de `react-hook-form` (binding, não primitivo visual), então não tem equivalente no design. `select.tsx`/`sheet.tsx` foram migrados pro `@cbrl/design` (já existiam lá). Se um novo primitivo só do imovil surgir e um 2º app precisar, promover (regra "2+ apps usam = sobe pro design").
+- **Não copie** componentes do design pra `src/components/ui/` — sempre importe: `import { Button } from '@imovil/design'`.
+- Se precisar de variante específica que o design não tem, primeiro avalie se faz sentido adicionar ao `@imovil/design`.
+- **Componentes inline em imovil**: hoje só `form.tsx` fica em `src/components/ui/` — é wrapper de `react-hook-form` (binding, não primitivo visual), então não tem equivalente no design. `select.tsx`/`sheet.tsx` foram migrados pro `@imovil/design` (já existiam lá). Se um novo primitivo só do imovil surgir e um 2º app precisar, promover (regra "2+ apps usam = sobe pro design").
 - **Style alinhado**: shadcn `radix-nova` ([preset b0](https://ui.shadcn.com/create?preset=b0)). Componentes do design importam do umbrella `radix-ui` (style nova). O `form.tsx` inline ainda usa `@radix-ui/react-*` granular onde necessário.
 
 ## Backend (Supabase)

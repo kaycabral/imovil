@@ -9,7 +9,7 @@ export type LocalSupabase = {
   dbUrl: string
 }
 
-/** apps/imovil, found by walking up from the cwd to the dir that holds `supabase/config.toml`. */
+/** apps/web, found by walking up from the cwd to the dir that holds `supabase/config.toml`. */
 export function imovilAppDir(): string {
   for (let dir = process.cwd(); ; dir = path.dirname(dir)) {
     if (existsSync(path.join(dir, 'supabase', 'config.toml'))) return dir

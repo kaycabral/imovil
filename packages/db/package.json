@@ -14,17 +14,17 @@
     "test": "vitest run",
     "test:integration:pg": "vitest run --config vitest.pg.config.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.ts",
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@cbrl/db": "workspace:*",
-    "@cbrl/env": "workspace:*",
+    "@imovil/env": "workspace:*",
     "@imovil/shared": "workspace:*",
     "drizzle-orm": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {
-    "@cbrl/tsconfig-base": "workspace:*",
+    "@imovil/tsconfig": "workspace:*",
     "@types/pg": "catalog:",
     "drizzle-kit": "catalog:",
     "tsx": "catalog:",
