@@ -7,7 +7,9 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # PR runs are disposable; a run on main may be applying production
+  # migrations and must never be killed halfway.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -38,3 +40,60 @@ jobs:
       - run: pnpm --filter @imovil/web run db:start
       - run: pnpm --filter @imovil/db run test:integration:pg
       - run: pnpm build
+
+  # Migration hygiene: the journal is consistent, `schema.ts` has no change
+  # without its generated migration, and migrations already on main are never
+  # edited (production has applied them; fix forward with a new one).
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # drizzle.config.ts requires a URL; check/generate never connect.
+      POSTGRES_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @imovil/db exec drizzle-kit check
+      - name: Schema changes ship with their migration
+        run: |
+          pnpm --filter @imovil/db run db:generate
+          if [ -n "$(git status --porcelain packages/db/drizzle)" ]; then
+            git status --porcelain packages/db/drizzle
+            echo "::error::schema.ts changed without a migration. Run 'pnpm --filter @imovil/db db:generate' and commit packages/db/drizzle."
+            exit 1
+          fi
+      - name: Migrations on main are immutable
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          edited=$(git diff --name-only --diff-filter=MDR "origin/${BASE_REF}...HEAD" -- \
+            'packages/db/drizzle/*.sql' 'packages/db/drizzle/meta/*_snapshot.json')
+          if [ -n "$edited" ]; then
+            echo "$edited"
+            echo "::error::Migrations already on ${BASE_REF} were edited, renamed or deleted. Add a new migration instead."
+            exit 1
+          fi
+
+  # Production schema rollout. Runs only on main, only after every check above
+  # is green, inside the `production` environment (its secret is unreachable
+  # from any other branch). Idempotent: with nothing pending it is a no-op, so
+  # it runs on every push and Vercel can gate production promotion on it.
+  migrate-production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [checks, supabase, migrations]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - name: Apply pending migrations
+        env:
+          # Supabase session pooler (port 5432): IPv4-reachable from runners
+          # and supports the migrator's advisory lock (the 6543 transaction
+          # pooler does not).
+          POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+        run: pnpm --filter @imovil/db run db:migrate
