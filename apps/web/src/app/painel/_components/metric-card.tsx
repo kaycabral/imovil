@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@imovil/design'
+import { Card, CardContent } from '@cbrl/design'
 
 type TrendDirection = 'up' | 'down' | 'flat'
 

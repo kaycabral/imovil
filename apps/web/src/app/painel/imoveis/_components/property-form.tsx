@@ -11,8 +11,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Button, Input, Skeleton } from '@cbrl/design'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Input, Skeleton } from '@imovil/design'
 import { Loader2, MapPin } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'

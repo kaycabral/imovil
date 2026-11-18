@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Card } from '@imovil/design'
+import { Button, Card } from '@cbrl/design'
 import { CloudOff } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'

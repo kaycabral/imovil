@@ -1,4 +1,4 @@
-import { cn } from '@imovil/design'
+import { cn } from '@cbrl/design'
 
 type ContainerProps = {
   width?: 'wide' | 'standard'

@@ -12,7 +12,7 @@ Cada workspace (`apps/*`, `packages/*`) tem `CLAUDE.md` próprio com escopo e re
 4. **Codebase em inglês.** Identificadores, comentários, mensagens de erro, logs, nomes de eventos.
 5. **ESLint: nunca desabilitar.** Sem `eslint-disable*`. Dívida antiga vive no `eslint-suppressions.json` de cada workspace (catraca: violação nova falha).
 6. **Tipagem sem escape hatches.** Sem `any`, `as any`, `as unknown as X`, `@ts-ignore`.
-7. **Primitivos UI vêm do `@imovil/design`** (shadcn sobre Radix). Não copiar componente pro app.
+7. **Primitivos UI vêm do `@cbrl/design`** (shadcn sobre Radix). Não copiar componente pro app.
 8. **Sem merge sem evidência de execução real** (spec E2E, log de `pnpm test` cobrindo o caminho, ou smoke manual descrito no PR).
 
 ## Gates
@@ -31,4 +31,4 @@ Ambiente local (stack Supabase via Docker): `pnpm --filter @imovil/web db:start`
 
 - **Deploy**: Vercel (Root Directory `apps/web`), Postgres/Auth/Storage no Supabase. Envs na Vercel: `POSTGRES_URL` (pooler de transação, injetada pela integração Supabase ↔ Vercel), `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, flags `IMOVIL_FEATURE_*`. Migrations em produção: `pnpm --filter @imovil/db db:migrate` com `POSTGRES_URL_NON_POOLING`.
 - **turbo em modo estrito** corta envs no build: toda env lida no build entra no `passThroughEnv` de `apps/web/turbo.json`.
-- **Origem**: extraído do monorepo `cbrl` em 2026-11-17 com histórico (`git filter-repo`; `apps/imovil`→`apps/web`, `packages/imovil/*`→`packages/*`). `@imovil/{tsconfig,eslint-config,env,design,testing}` são cópias vendorizadas dos `@cbrl/*` e o pool Postgres do `@cbrl/db` foi inlinado no `@imovil/db` (só modo password) — evoluem aqui de forma independente.
+- **Origem**: extraído do monorepo `cbrl` em 2026-11-17 com histórico (`git filter-repo`; `apps/imovil`→`apps/web`, `packages/imovil/*`→`packages/*`). Design system e ferramental (`@cbrl/{design,env,pg,tsconfig,eslint-config,prettier-config,commitlint-config,testing}`) vêm dos pacotes publicados no npm (fonte: repo `kaycabral/toolkit`); mudança neles é feita lá e entra aqui por bump de versão. O `@imovil/db` usa o pool do `@cbrl/pg` (só modo password, CA do Supabase pinado).

@@ -12,7 +12,7 @@ import {
   CardContent,
   Input,
   Label,
-} from '@imovil/design'
+} from '@cbrl/design'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'

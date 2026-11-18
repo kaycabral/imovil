@@ -1,5 +1,5 @@
 import { Container } from '@/components/container'
-import { Card, CardContent, Skeleton } from '@imovil/design'
+import { Card, CardContent, Skeleton } from '@cbrl/design'
 import { PageHeaderSkeleton } from '../_components/page-header-skeleton'
 
 // Meus imóveis: filter chips + cards mobile / tabela desktop.

@@ -24,7 +24,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@imovil/design'
+} from '@cbrl/design'
 import type { LucideIcon } from 'lucide-react'
 import { ChevronDown, LogOut, Menu, Moon, Plus, Sun, User } from 'lucide-react'
 import type { Route } from 'next'

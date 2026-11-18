@@ -1,7 +1,7 @@
 'use client'
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Card, CardContent, Input, Switch } from '@imovil/design'
+import { Card, CardContent, Input, Switch } from '@cbrl/design'
 import { type FieldPath, type FieldValues, type UseFormReturn } from 'react-hook-form'
 
 const brlCentsFormatter = new Intl.NumberFormat('pt-BR', {

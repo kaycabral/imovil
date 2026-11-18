@@ -1,5 +1,5 @@
 import { Container } from '@/components/container'
-import { Card, Skeleton } from '@imovil/design'
+import { Card, Skeleton } from '@cbrl/design'
 import { PageHeaderSkeleton } from '../_components/page-header-skeleton'
 
 // Leads: filtros + lista com avatar + nome + badge + texto + botão WhatsApp.

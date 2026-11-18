@@ -1,11 +1,6 @@
 {
-  "extends": "@imovil/tsconfig/base.json",
+  "extends": "@cbrl/tsconfig/nextjs.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
       "@e2e/*": ["./e2e/*"]

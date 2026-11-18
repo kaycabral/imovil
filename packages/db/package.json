@@ -18,13 +18,14 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@imovil/env": "workspace:*",
+    "@cbrl/env": "^0.1.0",
+    "@cbrl/pg": "^0.1.0",
     "@imovil/shared": "workspace:*",
     "drizzle-orm": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {
-    "@imovil/tsconfig": "workspace:*",
+    "@cbrl/tsconfig": "^0.1.0",
     "@types/pg": "catalog:",
     "drizzle-kit": "catalog:",
     "tsx": "catalog:",

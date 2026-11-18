@@ -8,7 +8,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@imovil/design'
+} from '@cbrl/design'
 import { propertyKindLabels } from '@imovil/shared'
 import { Search } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'

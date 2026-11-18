@@ -1,4 +1,4 @@
-import { Skeleton } from '@imovil/design'
+import { Skeleton } from '@cbrl/design'
 
 /** Dimensões espelham PageHeader real: h1 text-xl md:text-2xl + p text-sm md:text-base */
 export function PageHeaderSkeleton({

@@ -14,7 +14,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@imovil/tsconfig": "workspace:*",
+    "@cbrl/tsconfig": "^0.1.0",
     "typescript": "catalog:"
   }
 }

@@ -1,7 +1,7 @@
 import { Container } from '@/components/container'
 import { getPropertyBySlug } from '@/lib/db'
 import { getFeatures } from '@/lib/features'
-import { Badge, Button, Card } from '@imovil/design'
+import { Badge, Button, Card } from '@cbrl/design'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FilterChip, FilterChipRow } from '../_components/filter-chip'

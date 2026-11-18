@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from '@imovil/design'
+} from '@cbrl/design'
 import { propertyKindLabels, type PropertyImage } from '@imovil/shared'
 import { Loader2, Trash2, Upload } from 'lucide-react'
 import Image from 'next/image'

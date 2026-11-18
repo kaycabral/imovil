@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@imovil/design'
+} from '@cbrl/design'
 import type { PropertyStatus } from '@imovil/shared'
 import { MoreHorizontal } from 'lucide-react'
 import type { Route } from 'next'

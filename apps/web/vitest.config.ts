@@ -1,4 +1,4 @@
-import { coverageBase } from '@imovil/testing/vitest'
+import { coverageBase } from '@cbrl/testing/vitest'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

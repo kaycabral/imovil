@@ -22,8 +22,8 @@
     "type-coverage": "type-coverage --at-least 98 --strict --ignore-catch"
   },
   "dependencies": {
-    "@imovil/design": "workspace:*",
-    "@imovil/env": "workspace:*",
+    "@cbrl/design": "^0.1.0",
+    "@cbrl/env": "^0.1.0",
     "@hookform/resolvers": "catalog:",
     "@imovil/db": "workspace:*",
     "@imovil/shared": "workspace:*",
@@ -45,9 +45,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@imovil/eslint-config": "workspace:*",
-    "@imovil/testing": "workspace:*",
-    "@imovil/tsconfig": "workspace:*",
+    "@cbrl/eslint-config": "^0.1.0",
+    "@cbrl/testing": "^0.1.0",
+    "@cbrl/tsconfig": "^0.1.0",
     "@playwright/test": "catalog:",
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
