@@ -41,10 +41,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm run dev',
+    // CI runs the production build: no on-demand compilation (a server action's
+    // first call in `next dev` can outlast an assertion timeout) and closer to
+    // what ships. The env below is set before `next build`, so the NEXT_PUBLIC_*
+    // values are inlined for the local stack. Locally, `next dev` keeps the loop fast.
+    command: process.env.CI ? 'pnpm run build && pnpm run start -p 3003' : 'pnpm run dev',
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: process.env.CI ? 300_000 : 120_000,
     env: {
       ...supabaseEnv,
       ENABLE_TEST_AUTH: 'true',

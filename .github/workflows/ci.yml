@@ -77,17 +77,56 @@ jobs:
             exit 1
           fi
 
+  # Playwright E2E against the LOCAL Supabase stack, on the production build
+  # (playwright.config.ts switches `next dev` → `next build && next start` when
+  # CI is set). Browsers are cached per Playwright version; on a hit only the
+  # OS dependencies are installed.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @imovil/web run db:start
+      - name: Resolve Playwright version
+        id: playwright
+        run: echo "version=$(pnpm --filter @imovil/web exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: pnpm --filter @imovil/web exec playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        run: pnpm --filter @imovil/web exec playwright install-deps chromium
+      - run: pnpm --filter @imovil/web run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          retention-days: 7
+
   # Production schema rollout. Runs only on main, only after every check above
   # is green, inside the `production` environment (its secret is unreachable
   # from any other branch). Idempotent: with nothing pending it is a no-op, so
   # it runs on every push and Vercel can gate production promotion on it.
+  # `always()` matters: a job skipped because a dependency failed reports as
+  # "skipped", which Vercel's Deployment Checks treat as passing. Running and
+  # failing explicitly turns any red check into a blocked promotion.
   migrate-production:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [checks, supabase, migrations]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [checks, supabase, migrations, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
     steps:
+      - name: Every required check passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: |
+          echo "::error::A required job did not succeed; production is not migrated and the deploy must not be promoted."
+          exit 1
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - name: Apply pending migrations

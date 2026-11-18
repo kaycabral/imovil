@@ -49,7 +49,10 @@ test.describe('desktop cluster', () => {
     await page.getByRole('menuitem', { name: 'Sair' }).click()
 
     await expect(page).toHaveURL(/\/imoveis(\?|$)/)
+
+    // Session cookie cleared — hitting /painel should start the sign-in again.
+    const signIn = waitForGoogleSignIn(page)
     await page.goto('/painel')
-    await expect(page).toHaveURL(/\/imoveis\?login=1/)
+    await expect(signIn).resolves.toEqual({ callbackPath: '/auth/callback', next: '/painel' })
   })
 })

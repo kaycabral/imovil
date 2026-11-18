@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import path from 'node:path'
 
 import { test as base, expect } from '@playwright/test'
@@ -86,7 +87,11 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   },
 
   seedProperty: async ({ brokerId }, use, testInfo) => {
-    const tag = testInfo.testId.replace(/[^a-zA-Z0-9]/g, '').slice(-8)
+    // testId alone is stable across runs and the suite never wipes the shared
+    // database, so a leftover row from an earlier run (e.g. a broker orphaned
+    // when a worker restarted after a failure) would duplicate the title. The
+    // random suffix makes every run's titles unique.
+    const tag = `${testInfo.testId.replace(/[^a-zA-Z0-9]/g, '').slice(-6)}${randomBytes(3).toString('hex')}`
     let seq = 0
     await use(async (input = {}) => {
       seq += 1
