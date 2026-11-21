@@ -1,5 +1,5 @@
 import { eq, sql } from 'drizzle-orm'
-import { getImovilDb } from '../pool'
+import { imovilDb } from '../db'
 import { profiles } from '../schema'
 
 export type Profile = {
@@ -11,7 +11,8 @@ export type Profile = {
 }
 
 export async function getProfile(id: string): Promise<Profile | null> {
-  const [row] = await getImovilDb()
+  const [row] = await imovilDb
+    .db()
     .select({
       id: profiles.id,
       displayName: profiles.displayName,
@@ -30,7 +31,8 @@ export async function updateProfileContact(
   id: string,
   contact: { phone: string; creci: string },
 ): Promise<boolean> {
-  const rows = await getImovilDb()
+  const rows = await imovilDb
+    .db()
     .update(profiles)
     .set({ ...contact, updatedAt: sql`now()` })
     .where(eq(profiles.id, id))

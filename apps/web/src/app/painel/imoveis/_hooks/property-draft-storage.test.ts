@@ -1,6 +1,7 @@
+import type { PostalCodeAddress } from '@cbrl/br/postal-code'
 import type { PropertyImage } from '@imovil/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PostalCodeLookup, PropertyFormValues } from '../_data/property-form-schema'
+import type { PropertyFormValues } from '../_data/property-form-schema'
 import {
   DRAFT_KEY_PREFIX,
   DRAFT_TTL_MS,
@@ -36,7 +37,7 @@ const fakeValues: PropertyFormValues = {
 }
 const fakeImages: PropertyImage[] = []
 const fakePostalCodeInput = '01310-100'
-const fakePostalCodeResult: PostalCodeLookup | null = null
+const fakePostalCodeResult: PostalCodeAddress | null = null
 
 beforeEach(() => {
   window.localStorage.clear()

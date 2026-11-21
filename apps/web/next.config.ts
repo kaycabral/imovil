@@ -1,5 +1,4 @@
-import { execSync } from 'node:child_process'
-
+import { commitSha, cspDirectives, devOrigins, withSecurityHeaders } from '@cbrl/next/config'
 import type { NextConfig } from 'next'
 
 // Supabase project URL: production is https://<ref>.supabase.co; the local stack
@@ -8,62 +7,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
   : null
 const isLocalSupabase = supabaseUrl?.protocol === 'http:'
-
-// Build-time git SHA — read by /api/health so a smoke can check which commit is
-// serving. Fallbacks: Vercel's commit SHA, then git, then a literal 'unknown'
-// so dev builds don't crash when /.git isn't available.
-const commitSha = (() => {
-  if (process.env.NEXT_PUBLIC_COMMIT_SHA) return process.env.NEXT_PUBLIC_COMMIT_SHA
-  if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
-  try {
-    return execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
-      .toString()
-      .trim()
-  } catch {
-    return 'unknown'
-  }
-})()
-
-// Defesa em profundidade.
-// Browser fala com Supabase (Auth + Storage) e MapTiler (mapa). Login Google é
-// redirect (sem popup/iframe), então não precisa de script/frame do Google.
 const supabaseOrigin = supabaseUrl ? supabaseUrl.origin : 'https://*.supabase.co'
-const cspReportOnly = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https: blob:",
-  "font-src 'self' data:",
-  `connect-src 'self' ${supabaseOrigin} https://api.maptiler.com`,
-  "worker-src 'self' blob:",
-  "frame-src 'none'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join('; ')
-
-const securityHeaders = [
-  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  {
-    key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-  },
-  { key: 'Content-Security-Policy-Report-Only', value: cspReportOnly },
-]
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
-  env: {
-    NEXT_PUBLIC_COMMIT_SHA: commitSha,
-  },
-  async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
-  },
-  // 127.0.0.1: Playwright browser (CI). ideapad.local: dev access from LAN hostname.
-  allowedDevOrigins: ['127.0.0.1', 'ideapad.local'],
+  // Served by /api/health so a smoke test can check which commit is live.
+  env: { NEXT_PUBLIC_COMMIT_SHA: commitSha() },
+  // 127.0.0.1 (Playwright), <hostname>.local and the machine's LAN IPv4s.
+  allowedDevOrigins: devOrigins(),
   images: {
     // The local Supabase stack serves Storage from http://127.0.0.1:54321.
     // Next refuses to optimize images from private IPs (anti-SSRF), even when
@@ -83,4 +34,11 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+// The browser talks to Supabase (Auth + Storage) and MapTiler (map). Google
+// sign-in is a redirect (no popup/iframe), so no Google script or frame. The CSP
+// is report-only for now; violations go to /api/csp-report.
+export default withSecurityHeaders(nextConfig, {
+  csp: cspDirectives({ 'connect-src': [supabaseOrigin, 'https://api.maptiler.com'] }),
+  cspMode: 'report-only',
+  reportPath: '/api/csp-report',
+})

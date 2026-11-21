@@ -1,3 +1,4 @@
+import type { PostalCodeAddress } from '@cbrl/br/postal-code'
 import { propertyDealSchema, propertyKindSchema, type PropertyImage } from '@imovil/shared'
 import { z } from 'zod'
 
@@ -31,20 +32,6 @@ export const propertyFormSchema = z.object({
 
 export type PropertyFormValues = z.infer<typeof propertyFormSchema>
 
-export type PostalCodeLookup = {
-  postalCode: string
-  state: string
-  city: string
-  neighborhood: string
-  street: string
-}
-
-export function formatPostalCode(raw: string): string {
-  const digits = raw.replace(/\D/g, '').slice(0, 8)
-  if (digits.length <= 5) return digits
-  return `${digits.slice(0, 5)}-${digits.slice(5)}`
-}
-
 export type PropertyFormProfile = {
   id: string
   phone: string | null
@@ -57,7 +44,7 @@ export type PropertyFormInitial = {
   values: PropertyFormValues
   images: PropertyImage[]
   postalCodeInput: string
-  postalCodeResult: PostalCodeLookup | null
+  postalCodeResult: PostalCodeAddress | null
 }
 
 export const PROPERTY_FORM_DEFAULTS: PropertyFormValues = {

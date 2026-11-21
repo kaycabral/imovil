@@ -8,7 +8,7 @@ Portal de imóveis: corretores cadastram e gerenciam imóveis num painel; o púb
 | `packages/db`     | Schema, migrations (Drizzle) e queries do Postgres no Supabase |
 | `packages/shared` | Tipos de domínio compartilhados (`Property`, …)                |
 
-Design system e ferramental compartilhado vêm dos pacotes publicados do toolkit [`@cbrl/*`](https://github.com/kaycabral/toolkit) no npm: `@cbrl/design`, `@cbrl/env`, `@cbrl/pg`, `@cbrl/tsconfig`, `@cbrl/eslint-config`, `@cbrl/prettier-config`, `@cbrl/commitlint-config`, `@cbrl/testing`.
+Design system e ferramental compartilhado vêm dos pacotes publicados do toolkit [`@cbrl/*`](https://github.com/kaycabral/toolkit) no npm: `@cbrl/design`, `@cbrl/env`, `@cbrl/pg`, `@cbrl/supabase`, `@cbrl/next`, `@cbrl/log`, `@cbrl/br`, `@cbrl/tsconfig`, `@cbrl/eslint-config`, `@cbrl/prettier-config`, `@cbrl/commitlint-config`, `@cbrl/testing`.
 
 ## Rodando local
 

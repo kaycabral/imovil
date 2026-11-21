@@ -1,3 +1,5 @@
+import { logger } from '@cbrl/log'
+
 export const BACKEND_READ_TIMEOUT_MS = 4_000
 
 export type BackendRead<T> = { ok: true; data: T } | { ok: false }
@@ -26,7 +28,7 @@ export async function readBackend<T>(
     const data = await Promise.race([read(), timeout])
     return { ok: true, data }
   } catch (error) {
-    console.error(`[backend] ${label} unavailable:`, error)
+    logger.error('backend read unavailable', { read: label, err: error })
     return { ok: false }
   } finally {
     clearTimeout(timer)

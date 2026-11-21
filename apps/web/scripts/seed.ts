@@ -4,10 +4,10 @@
 // every run; never touches other owners. Reads URL/keys/database from
 // `supabase status`, so it can only ever target the local stack.
 
-import { closeImovilDb } from '@imovil/db'
+import { readLocalSupabase } from '@cbrl/supabase/local'
+import { imovilDb } from '@imovil/db'
 import type { PropertyCreateInput } from '@imovil/shared'
 
-import { readLocalSupabase } from '../e2e/local-supabase'
 import { recreateAuthUser, seedProfile, seedProperty } from '../e2e/seed'
 
 const local = readLocalSupabase()
@@ -134,7 +134,7 @@ async function main(): Promise<void> {
     console.error('\nO stack local está rodando? Suba com `pnpm db:start` antes.\n')
     process.exitCode = 1
   } finally {
-    await closeImovilDb()
+    await imovilDb.close()
   }
 }
 

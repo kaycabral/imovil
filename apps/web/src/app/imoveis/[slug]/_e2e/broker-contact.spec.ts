@@ -16,5 +16,5 @@ test('visitor sees broker phone on WhatsApp CTA of published property', async ({
 
   const waLink = page.getByRole('link', { name: /Falar no WhatsApp/ })
   await expect(waLink).toBeVisible()
-  await expect(waLink).toHaveAttribute('href', /wa\.me\/92999990000/)
+  await expect(waLink).toHaveAttribute('href', /wa\.me\/5592999990000/)
 })

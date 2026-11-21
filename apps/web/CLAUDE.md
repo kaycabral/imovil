@@ -24,19 +24,26 @@ Design system canônico é `@cbrl/design` (pacote npm, fonte no repo `kaycabral/
 Banco, login e arquivos são Supabase; não há Firebase no imovil.
 
 - **Banco (Postgres)** só no servidor, via `@/lib/db` (`server-only`, re-exporta `@imovil/db`: Drizzle + `pg`). Tabelas com RLS ligada e **sem policies** — o browser nunca lê/escreve o banco; toda escrita passa por server action (`src/app/actions/*`).
-- **Auth** com `@supabase/ssr` (sessão em cookie):
-  - `@/lib/supabase/config.ts` — URL + publishable key (`NEXT_PUBLIC_SUPABASE_*`); `null` quando não configurado (o app degrada em vez de quebrar).
-  - `@/lib/supabase/client.ts` — browser (client components): Auth e Storage.
-  - `@/lib/supabase/server.ts` — server (RSC, actions, route handlers), cookies do request.
-  - `@/lib/supabase/proxy.ts` + `src/proxy.ts` — refresh da sessão em toda rota.
-  - `@/lib/auth/server.ts` — `getServerUser()` → `SessionUser | null` via `getClaims()` (verifica o JWT). **Nunca** confiar em `getSession()` no servidor.
-- **Fluxo de login (Google, redirect)**: `useGoogleSignIn` → `signInWithOAuth` → Google → `/auth/callback` (troca o code pela sessão) → `next` (same-origin, `safeNext`). O perfil (`profiles`) nasce do trigger `on_auth_user_created`.
+- **Auth** com `@cbrl/supabase` (sobre `@supabase/ssr`, sessão em cookie; clients `null` quando `NEXT_PUBLIC_SUPABASE_*` falta — o app degrada em vez de quebrar):
+  - `@cbrl/supabase/client` — browser (client components): Auth e Storage.
+  - `@cbrl/supabase/server` — server (RSC, actions, route handlers), cookies do request.
+  - `src/proxy.ts` — `updateSession` (`@cbrl/supabase/proxy`) refresca a sessão em toda rota (menos assets e `/api/csp-report`).
+  - `@/lib/auth/server.ts` — `getServerUser()` → `SessionUser | null` (`sessionUserFromClaims`) via `getClaims()` (verifica o JWT), dentro de `readBackend`. **Nunca** confiar em `getSession()` no servidor.
+- **Fluxo de login (Google, redirect)**: `useGoogleSignIn` (`@/hooks`, wrapper do `@cbrl/supabase/react` que escolhe o `next` e os toasts) → Google → `/auth/callback` (`authCallbackRoute`: troca o code pela sessão) → `next` (same-origin). O perfil (`profiles`) nasce do trigger `on_auth_user_created`. Login de teste do E2E: `/api/e2e-signin` (`testSignInRoute`).
 - **Fotos**: bucket público `property-images` (Supabase Storage). Upload direto do browser no caminho `{userId}/…` — as policies do storage só permitem a pasta do próprio usuário.
 - **Degradação**: leitura de backend no servidor passa por `readBackend` (`@/lib/backend-read`, timeout + fallback). Backend fora → páginas renderizam o estado "Tentar de novo"; sessão indisponível = deslogado.
 
+## Pacotes do toolkit (não recriar no app)
+
+- **Logs**: `logger` do `@cbrl/log` (JSON estruturado, redação de PII). `no-console` é erro em `src/` (testes fora). O `@cbrl/log` é só Node: client component não loga, mostra o erro na UI.
+- **Next**: `next.config.ts` usa `@cbrl/next/config` (headers de segurança, CSP em `report-only` com reports em `/api/csp-report` via `cspReportRoute`, `commitSha`, `devOrigins`); `/api/health` é `healthRoute`; `safeNext` vem do `@cbrl/next`.
+- **BR**: telefone/WhatsApp (`@cbrl/br/phone`: `maskBrazilPhone`, `normalizeBrazilPhone`, `whatsappUrl`), dinheiro (`@cbrl/br/money`), CEP (`@cbrl/br/postal-code`: `lookupPostalCode`, `maskPostalCode`). A rota `/api/postal-code` mantém o rate limit do app.
+- **UI**: `ThemeProvider`, `initials`, `WhatsappIcon` vêm do `@cbrl/design`.
+- **Testes**: `installJsdomPolyfills` (`vitest.setup.ts`), `defineE2EConfig`/`defineSmokeConfig`/`smokeSuite` (configs do Playwright), `readLocalSupabase`/`writeEnvLocal` (`@cbrl/supabase/local`) nos scripts e no Playwright.
+
 **Proibições (além das canônicas):**
 
-- `@/lib/db`, `@/lib/auth/server`, `@/lib/supabase/server` em **client components**.
+- `@/lib/db`, `@/lib/auth/server`, `@cbrl/supabase/server`, `@cbrl/log` em **client components**.
 - Acessar o banco pelo client do Supabase (PostgREST) — dado vai por server action / RSC.
 - Chave secreta do Supabase no app: ela só existe no stack local (E2E/seed).
 

@@ -31,8 +31,8 @@ export type PropertyBroker = {
   name: string
   role: string
   creci: string
-  phone: string
-  whatsappText: string
+  /** `https://wa.me/55…` click-to-chat link, prefilled with the visit request. */
+  whatsappUrl: string
   avatar: string | null
 }
 

@@ -1,4 +1,4 @@
-import { formatBRLFromCents } from '@/lib/money'
+import { formatBRLFromCents } from '@cbrl/br/money'
 import { Badge } from '@cbrl/design'
 import { propertyKindLabels, type Property } from '@imovil/shared'
 import Image from 'next/image'

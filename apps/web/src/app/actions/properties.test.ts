@@ -1,4 +1,4 @@
-import type { SessionUser } from '@/lib/auth/session-user'
+import type { SessionUser } from '@cbrl/supabase'
 import type { Profile, PropertyWrite } from '@imovil/db'
 import type { Property, PropertyCreateInput, PropertyStatus } from '@imovil/shared'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -13,7 +13,6 @@ const insertProperty =
   >()
 const writeProperty = vi.fn<(id: string, input: PropertyWrite) => Promise<void>>()
 const writePropertyStatus = vi.fn<(id: string, status: PropertyStatus) => Promise<void>>()
-const isUniqueViolation = vi.fn<(error: unknown, constraint?: string) => boolean>()
 const revalidatePath = vi.fn<(path: string) => void>()
 const geocodeAddress = vi.fn<
   (q: { street?: string; neighborhood: string; city: string; state: string }) => Promise<{
@@ -32,7 +31,6 @@ vi.mock('@/lib/db', () => ({
     insertProperty(ownerId, slug, input),
   updateProperty: (id: string, input: PropertyWrite) => writeProperty(id, input),
   setPropertyStatus: (id: string, status: PropertyStatus) => writePropertyStatus(id, status),
-  isUniqueViolation: (error: unknown, constraint?: string) => isUniqueViolation(error, constraint),
 }))
 vi.mock('next/cache', () => ({
   revalidatePath: (path: string) => revalidatePath(path),
@@ -43,10 +41,18 @@ vi.mock('@/lib/geocode', () => ({
 
 class UniqueViolation extends Error {
   readonly code = '23505'
+  readonly constraint = 'properties_slug_unique'
 }
 
 function sessionUser(id: string): SessionUser {
-  return { id, email: `${id}@example.com`, name: null, avatarUrl: null }
+  return {
+    id,
+    email: `${id}@example.com`,
+    name: null,
+    avatarUrl: null,
+    emailVerified: true,
+    appMetadata: {},
+  }
 }
 
 function profile(overrides: Partial<Profile> = {}): Profile {
@@ -110,7 +116,6 @@ beforeEach(() => {
   insertProperty.mockImplementation((_ownerId, slug) => Promise.resolve({ id: 'new-id', slug }))
   writeProperty.mockResolvedValue(undefined)
   writePropertyStatus.mockResolvedValue(undefined)
-  isUniqueViolation.mockImplementation((error) => error instanceof UniqueViolation)
 })
 afterEach(() => vi.resetAllMocks())
 
@@ -228,10 +233,6 @@ describe('createProperty action', () => {
     const result = await createProperty(validInput())
 
     expect(insertProperty).toHaveBeenCalledTimes(2)
-    expect(isUniqueViolation).toHaveBeenCalledWith(
-      expect.any(UniqueViolation),
-      'properties_slug_unique',
-    )
     expect(result).toEqual({ ok: true, id: 'new-id', slug: insertProperty.mock.calls[1]![1] })
     expect(revalidatePath).toHaveBeenCalledWith('/imoveis')
   })

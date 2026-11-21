@@ -1,16 +1,14 @@
+import { isUniqueViolation } from '@cbrl/pg'
 import { sql } from 'drizzle-orm'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
-  closeImovilDb,
-  getImovilDb,
   getProfile,
   getPropertyById,
   getPropertyBySlug,
+  imovilDb,
   insertProperty,
-  isUniqueViolation,
   listProperties,
   listReleases,
-  runImovilMigrations,
   seedUser,
   setPropertyStatus,
   truncateImovilTables,
@@ -55,11 +53,11 @@ async function pgError(promise: Promise<unknown>): Promise<unknown> {
 }
 
 beforeAll(async () => {
-  await runImovilMigrations()
+  await imovilDb.migrate()
 })
 
 beforeEach(async () => {
-  const db = getImovilDb()
+  const db = imovilDb.db()
   await truncateImovilTables(db)
   await seedUser(db, {
     id: BROKER,
@@ -71,7 +69,7 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await closeImovilDb()
+  await imovilDb.close()
 })
 
 describe('profiles', () => {
@@ -153,7 +151,7 @@ describe('properties', () => {
     await updateProperty(id, write({ coords: null }))
     await expect(getPropertyById(id)).resolves.toMatchObject({ coords: null })
     const error = await pgError(
-      getImovilDb().execute(sql`update properties set lat = 1, lng = null where id = ${id}`),
+      imovilDb.db().execute(sql`update properties set lat = 1, lng = null where id = ${id}`),
     )
     const reason = error instanceof Error ? (error.cause ?? error) : error
     expect(String(reason)).toMatch(/properties_coords_pair/)
@@ -173,7 +171,7 @@ describe('properties', () => {
 
   it('cascade away with the owner', async () => {
     await insertProperty(BROKER, 'gone', write())
-    await getImovilDb().execute(sql`delete from auth.users where id = ${BROKER}`)
+    await imovilDb.db().execute(sql`delete from auth.users where id = ${BROKER}`)
     await expect(getProfile(BROKER)).resolves.toBeNull()
     await expect(getPropertyBySlug('gone')).resolves.toBeNull()
   })
@@ -181,7 +179,8 @@ describe('properties', () => {
 
 describe('changelog', () => {
   it('lists releases newest first', async () => {
-    await getImovilDb()
+    await imovilDb
+      .db()
       .insert(changelog)
       .values([
         { tagName: 'v0.1.0', name: '0.1.0', body: 'a', publishedAt: new Date('2026-01-01') },
@@ -196,7 +195,7 @@ describe('changelog', () => {
 describe('row level security', () => {
   it('exposes nothing to the public API roles', async () => {
     await insertProperty(BROKER, 'hidden', write())
-    const rows = await getImovilDb().transaction(async (tx) => {
+    const rows = await imovilDb.db().transaction(async (tx) => {
       await tx.execute(sql`set local role anon`)
       const result = await tx.execute(sql`select count(*)::int as n from properties`)
       return result.rows

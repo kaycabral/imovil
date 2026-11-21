@@ -20,13 +20,15 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     // Unit-coverage ratchet (autoUpdate = one-way, só sobe). O seed honesto é
     // gravado pelo primeiro run com --coverage; piso anti-regressão depois.
+    // Rebaixado uma vez ao adotar os pacotes @cbrl/*: o código bem testado que
+    // saiu do app (auth, BR utils, safeNext) leva os testes junto pro toolkit.
     coverage: {
       ...coverageBase(),
       thresholds: {
-        statements: 59.02,
-        branches: 50.65,
-        functions: 46.82,
-        lines: 60.2,
+        statements: 57.1,
+        branches: 46.3,
+        functions: 45.51,
+        lines: 58.47,
         autoUpdate: true,
       },
     },

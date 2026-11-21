@@ -1,7 +1,7 @@
 import {
-  getImovilDb,
   getProfile,
   getPropertyById,
+  imovilDb,
   seedProperty as insertSeedProperty,
   listProperties,
   updateProfileContact,
@@ -101,7 +101,7 @@ export async function seedProperty(input: SeedPropertyInput): Promise<SeededProp
   const { floor, ...data } = propertyCreateSchema.parse({ ...defaultInput, ...input.overrides })
   const coords = input.coords === undefined ? { lat: -3.1, lng: -60.02 } : input.coords
   const slug = `${slugify(data.title) || 'imovel'}-${randomSuffix()}`
-  const id = await insertSeedProperty(getImovilDb(), {
+  const id = await insertSeedProperty(imovilDb.db(), {
     ...data,
     floor: floor ?? null,
     lat: coords?.lat ?? null,

@@ -57,8 +57,9 @@ describe('getBrokerById', () => {
       name: 'Ana Souza',
       role: 'Corretor responsável',
       creci: '12345-F',
-      phone: '+5592999999999',
-      whatsappText: 'Olá Ana, vi o imóvel pelo Imovil e queria agendar uma visita.',
+      whatsappUrl: `https://wa.me/5592999999999?text=${encodeURIComponent(
+        'Olá Ana, vi o imóvel pelo Imovil e queria agendar uma visita.',
+      )}`,
       avatar: 'https://example.com/a.png',
     })
   })
@@ -68,8 +69,14 @@ describe('getBrokerById', () => {
 
     await expect((await loadGetBrokerById())('uid-1')).resolves.toMatchObject({
       name: 'Corretor responsável',
-      whatsappText: 'Olá, vi o imóvel pelo Imovil e queria agendar uma visita.',
+      whatsappUrl: `https://wa.me/5592999999999?text=${encodeURIComponent(
+        'Olá, vi o imóvel pelo Imovil e queria agendar uma visita.',
+      )}`,
       avatar: null,
     })
+  })
+  it('returns null when the phone cannot become a WhatsApp link', async () => {
+    withProfile({ displayName: 'Ana Souza', phone: '123', creci: '12345-F' })
+    await expect((await loadGetBrokerById())('uid-1')).resolves.toBeNull()
   })
 })

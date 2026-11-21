@@ -15,12 +15,7 @@ const onAuthStateChange = vi.fn((callback: AuthListener) => {
   return { data: { subscription: { unsubscribe } } }
 })
 
-vi.mock('@/lib/supabase/config', () => ({
-  supabasePublicConfig: () =>
-    configured ? { url: 'https://project.supabase.co', key: 'publishable' } : null,
-}))
-
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock('@cbrl/supabase/client', () => ({
   getSupabaseBrowserClient: () =>
     configured
       ? { auth: { onAuthStateChange: (callback: AuthListener) => onAuthStateChange(callback) } }
@@ -39,11 +34,14 @@ describe('useUser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     configured = true
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://project.supabase.co')
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_123')
     listener = null
   })
 
   it('reports signed out without touching the SDK when Supabase is not configured', () => {
     configured = false
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '')
 
     const { result } = renderHook(() => useUser())
 
@@ -75,6 +73,8 @@ describe('useUser', () => {
         email: 'ana@example.com',
         name: 'Ana Souza',
         avatarUrl: 'https://example.com/a.png',
+        emailVerified: false,
+        appMetadata: {},
       },
       loading: false,
     })
@@ -84,7 +84,12 @@ describe('useUser', () => {
     const { result } = renderHook(() => useUser())
 
     emit('INITIAL_SESSION', { user: { id: 'u1', user_metadata: {} } })
-    expect(result.current.user).toEqual({ id: 'u1', email: null, name: null, avatarUrl: null })
+    expect(result.current.user).toMatchObject({
+      id: 'u1',
+      email: null,
+      name: null,
+      avatarUrl: null,
+    })
 
     emit('SIGNED_OUT', null)
     expect(result.current).toEqual({ user: null, loading: false })

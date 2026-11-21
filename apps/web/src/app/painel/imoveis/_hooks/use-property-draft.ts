@@ -1,11 +1,11 @@
 'use client'
 
+import { normalizePostalCode, type PostalCodeAddress } from '@cbrl/br/postal-code'
 import { type PropertyImage } from '@imovil/shared'
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from 'react'
 import { type UseFormReturn } from 'react-hook-form'
 import {
   PROPERTY_FORM_DEFAULTS,
-  type PostalCodeLookup,
   type PropertyFormInitial,
   type PropertyFormValues,
 } from '../_data/property-form-schema'
@@ -50,7 +50,7 @@ function isDraftEmpty(
   values: PropertyFormValues,
   images: PropertyImage[],
   postalCodeInput: string,
-  postalCodeResult: PostalCodeLookup | null,
+  postalCodeResult: PostalCodeAddress | null,
 ): boolean {
   if (images.length !== 0 || postalCodeInput !== '' || postalCodeResult !== null) return false
   return PROPERTY_FORM_KEYS.every((key) => values[key] === PROPERTY_FORM_DEFAULTS[key])
@@ -76,8 +76,8 @@ export function usePropertyDraft({
   setImages: Dispatch<SetStateAction<PropertyImage[]>>
   postalCodeInput: string
   setPostalCodeInput: Dispatch<SetStateAction<string>>
-  postalCodeResult: PostalCodeLookup | null
-  setPostalCodeResult: Dispatch<SetStateAction<PostalCodeLookup | null>>
+  postalCodeResult: PostalCodeAddress | null
+  setPostalCodeResult: Dispatch<SetStateAction<PostalCodeAddress | null>>
 }) {
   const draftRestored = useRef(false)
   const [draftHydrated, setDraftHydrated] = useState(isEdit)
@@ -87,7 +87,7 @@ export function usePropertyDraft({
   useEffect(() => {
     if (isEdit) {
       // Edit mode: marca skip pro effect do CEP (já temos os dados do endereço prontos).
-      if (initial?.postalCodeInput && initial.postalCodeInput.replace(/\D/g, '').length === 8) {
+      if (initial?.postalCodeInput && normalizePostalCode(initial.postalCodeInput) !== null) {
         draftRestored.current = true
       }
       return

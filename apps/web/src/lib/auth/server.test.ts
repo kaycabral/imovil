@@ -11,7 +11,10 @@ vi.mock('server-only', () => ({}))
 const getClaims = vi.fn<() => Promise<ClaimsResult>>()
 let configured = true
 
-vi.mock('@/lib/supabase/server', () => ({
+const logError = vi.hoisted(() => vi.fn<(message: string, meta?: object) => void>())
+vi.mock('@cbrl/log', () => ({ logger: { error: logError } }))
+
+vi.mock('@cbrl/supabase/server', () => ({
   createSupabaseServerClient: () =>
     Promise.resolve(configured ? { auth: { getClaims: () => getClaims() } } : null),
 }))
@@ -47,6 +50,8 @@ describe('getServerUser', () => {
       email: 'ana@example.com',
       name: 'Ana Souza',
       avatarUrl: 'https://example.com/a.png',
+      emailVerified: false,
+      appMetadata: {},
     })
   })
 
@@ -57,24 +62,23 @@ describe('getServerUser', () => {
   })
 
   it('treats a missing session as signed out without logging', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     getClaims.mockResolvedValue({ data: null, error: new AuthSessionMissingError() })
 
     await expect(getServerUser()).resolves.toBeNull()
-    expect(consoleError).not.toHaveBeenCalled()
+    expect(logError).not.toHaveBeenCalled()
   })
 
   it('returns null (and logs) when Supabase Auth fails', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     getClaims.mockResolvedValue({
       data: null,
       error: new AuthApiError('upstream down', 503, 'unexpected_failure'),
     })
 
     await expect(getServerUser()).resolves.toBeNull()
-    expect(consoleError).toHaveBeenCalledWith(
-      '[backend] session unavailable:',
-      expect.any(AuthApiError),
+    expect(logError).toHaveBeenCalledWith(
+      'backend read unavailable',
+      expect.objectContaining({ read: 'session' }),
     )
+    expect(logError.mock.lastCall?.[1]).toHaveProperty('err', expect.any(AuthApiError))
   })
 })

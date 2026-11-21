@@ -3,22 +3,17 @@
 import { Button, Card } from '@cbrl/design'
 import { CloudOff } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect } from 'react'
 
 // Safety net for any segment whose backend read is not wrapped in
 // `readBackend` (e.g. painel pages after a valid session): render a recoverable
-// screen inside the root layout instead of the default crash page.
+// screen inside the root layout instead of the default crash page. The error
+// itself is logged on the server, where it happened.
 export default function RouteError({
-  error,
   unstable_retry,
 }: {
   error: Error & { digest?: string }
   unstable_retry: () => void
 }) {
-  useEffect(() => {
-    console.error(error)
-  }, [error])
-
   return (
     <main className="bg-background text-foreground flex min-h-screen items-center justify-center p-5">
       <Card

@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { maskPostalCode, type PostalCodeAddress } from '@cbrl/br/postal-code'
 import { Button, Input, Skeleton } from '@cbrl/design'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, MapPin } from 'lucide-react'
@@ -20,9 +21,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
   PROPERTY_FORM_DEFAULTS,
-  formatPostalCode,
   propertyFormSchema,
-  type PostalCodeLookup,
   type PropertyFormInitial,
   type PropertyFormMode,
   type PropertyFormProfile,
@@ -63,7 +62,7 @@ export function PropertyForm({
   } = usePropertyImages({ initialImages: initial?.images })
   const [submitting, startTransition] = useTransition()
   const [postalCodeInput, setPostalCodeInput] = useState(() => initial?.postalCodeInput ?? '')
-  const [postalCodeResult, setPostalCodeResult] = useState<PostalCodeLookup | null>(
+  const [postalCodeResult, setPostalCodeResult] = useState<PostalCodeAddress | null>(
     () => initial?.postalCodeResult ?? null,
   )
   const [phone, setPhone] = useState<string | null>(profile.phone)
@@ -195,7 +194,7 @@ export function PropertyForm({
                     maxLength={9}
                     className="md:max-w-[240px]"
                     value={postalCodeInput}
-                    onChange={(e) => setPostalCodeInput(formatPostalCode(e.target.value))}
+                    onChange={(e) => setPostalCodeInput(maskPostalCode(e.target.value))}
                     disabled={lookingUpPostalCode}
                   />
                 </FormControl>
@@ -324,7 +323,7 @@ function AddressSkeleton() {
   )
 }
 
-function AddressSummary({ data }: { data: PostalCodeLookup }) {
+function AddressSummary({ data }: { data: PostalCodeAddress }) {
   const missingNeighborhood = data.neighborhood === ''
   const meta = [data.neighborhood, `${data.city} — ${data.state}`].filter(Boolean).join(' · ')
   return (

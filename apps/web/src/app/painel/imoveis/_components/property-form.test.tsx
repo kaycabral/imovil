@@ -54,7 +54,7 @@ const remove = vi
   .fn<(paths: string[]) => Promise<{ error: StorageError }>>()
   .mockResolvedValue({ error: null })
 const storageFrom = vi.fn((_bucket: string) => ({ upload, getPublicUrl, remove }))
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock('@cbrl/supabase/client', () => ({
   getSupabaseBrowserClient: () => ({
     auth: { getSession: () => getSession() },
     storage: { from: (bucket: string) => storageFrom(bucket) },

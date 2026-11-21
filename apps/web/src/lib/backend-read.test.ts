@@ -1,14 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readBackend } from './backend-read'
 
-describe('readBackend', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'error').mockImplementation(() => undefined)
-  })
+const logError = vi.hoisted(() => vi.fn<(message: string, meta?: object) => void>())
+vi.mock('@cbrl/log', () => ({ logger: { error: logError } }))
 
+describe('readBackend', () => {
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
   })
 
   it('returns the data when the read resolves', async () => {
@@ -21,7 +20,10 @@ describe('readBackend', () => {
   it('degrades when the read rejects', async () => {
     const result = await readBackend('rejects', () => Promise.reject(new Error('boom')))
     expect(result).toEqual({ ok: false })
-    expect(console.error).toHaveBeenCalledWith('[backend] rejects unavailable:', expect.any(Error))
+    expect(logError).toHaveBeenCalledWith(
+      'backend read unavailable',
+      expect.objectContaining({ read: 'rejects' }),
+    )
   })
 
   it('degrades when the read throws synchronously', async () => {
