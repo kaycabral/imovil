@@ -68,4 +68,4 @@ jobs:
           # Supabase session pooler (port 5432): IPv4-reachable from runners and
           # it keeps the session the migrator's advisory lock needs.
           POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
-        run: pnpm --filter @imovil/db run db:migrate
+        run: pnpm db:migrate

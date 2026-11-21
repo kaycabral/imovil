@@ -4,25 +4,25 @@ Runbook do ambiente de produção do imovil: o que roda onde, como mudança cheg
 
 ## Topologia
 
-| Peça                    | Onde                                                           |
-| ----------------------- | -------------------------------------------------------------- |
-| App (Next.js)           | Vercel, Root Directory `apps/web`, domínio `imovil.vercel.app` |
-| Postgres, Auth, Storage | Supabase, região `sa-east-1` (São Paulo)                       |
-| Funções (SSR, actions)  | Vercel `gru1` (São Paulo), fixado em `apps/web/vercel.json`    |
-| Login                   | Só Google (provider Google do Supabase Auth)                   |
-| Migrations              | GitHub Actions, job `migrate-production` do `main.yml`         |
+| Peça                    | Onde                                                                |
+| ----------------------- | ------------------------------------------------------------------- |
+| App (Next.js)           | Vercel, Root Directory na raiz do repo, domínio `imovil.vercel.app` |
+| Postgres, Auth, Storage | Supabase, região `sa-east-1` (São Paulo)                            |
+| Funções (SSR, actions)  | Vercel `gru1` (São Paulo), fixado em `vercel.json`                  |
+| Login                   | Só Google (provider Google do Supabase Auth)                        |
+| Migrations              | GitHub Actions, job `migrate-production` do `main.yml`              |
 
-**Ninguém acessa o banco de produção da própria máquina.** Dev local roda inteiro no stack Supabase em Docker (`pnpm --filter @imovil/web db:start`); a URL do banco de prod existe só no secret do GitHub e nas envs da Vercel.
+**Ninguém acessa o banco de produção da própria máquina.** Dev local roda inteiro no stack Supabase em Docker (`pnpm db:start`); a URL do banco de prod existe só no secret do GitHub e nas envs da Vercel.
 
 ## Fluxo de uma mudança
 
 1. PR → `pull-request.yml`: roda `checks.yml` (format, lint, typecheck, higiene de migrations, unit, suíte Postgres + build contra o stack local, E2E) e o dependency review. O ruleset da `main` exige o check `CI passed` com a branch atualizada.
-2. Merge na `main` → `main.yml`: o job `provenance` confirma pela API que a árvore do commit é idêntica à do head de um PR com `CI passed` verde. Confirmado, não re-roda nada; não confirmado (push direto via bypass, PR desatualizado), roda o pipeline completo antes. Então `migrate-production` aplica as migrations pendentes em prod (no-op quando não há). Commit não provado → `migrate-production` **falha** em vez de ser pulado (um check "skipped" passaria no Deployment Check da Vercel).
+2. Merge na `main` → `main.yml`: o job `provenance` confirma pela API que a árvore do commit é idêntica à do head de um PR com `CI passed` verde. Confirmado, não re-roda nada; não confirmado (push direto via bypass, PR desatualizado), roda o pipeline completo antes. Então `migrate-production` (`pnpm db:migrate`) aplica as migrations pendentes em prod (no-op quando não há). Commit não provado → `migrate-production` **falha** em vez de ser pulado (um check "skipped" passaria no Deployment Check da Vercel).
 3. Vercel builda o mesmo commit e só promove pra produção depois do check `migrate-production` passar (Deployment Checks). O código novo nunca entra no ar antes do schema que ele usa.
 
 ## Regras de migration
 
-- **Gerar, nunca escrever à mão o diff de schema**: `pnpm --filter @imovil/db db:generate`. SQL fora do Drizzle (trigger em `auth.users`, bucket, policies de storage) via `drizzle-kit generate --custom`.
+- **Gerar, nunca escrever à mão o diff de schema**: `pnpm db:generate`. SQL fora do Drizzle (trigger em `auth.users`, bucket, policies de storage) via `drizzle-kit generate --custom`.
 - **Imutáveis depois do merge.** Errou? Nova migration corrigindo (fix forward). O CI bloqueia edição/rename/remoção.
 - **Expand → contract.** Durante o deploy, a versão anterior do app roda contra o schema novo. Toda migration precisa ser compatível com o código que está no ar:
   - adicionar coluna: nullable ou com default;
