@@ -28,14 +28,14 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       '@cbrl/next':
-        specifier: ^0.1.0
-        version: 0.1.0(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
+        specifier: ^0.1.1
+        version: 0.1.1(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       '@cbrl/pg':
         specifier: ^0.3.0
         version: 0.3.0(drizzle-orm@0.45.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(pg@8.23.1))(pg@8.23.1)
       '@cbrl/supabase':
-        specifier: ^0.1.0
-        version: 0.1.0(@supabase/ssr@0.12.7(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1)))(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1))(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
+        specifier: ^0.1.1
+        version: 0.1.1(@supabase/ssr@0.12.7(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1)))(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1))(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
       '@hookform/resolvers':
         specifier: ^5.9.2
         version: 5.9.2(@sinclair/typebox@0.27.12)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
@@ -329,8 +329,8 @@ packages:
   '@cbrl/log@0.1.0':
     resolution: {integrity: sha512-pAjbG2+lKHGW7C4EFXCrJA5be/xveqH8pl1OKp7vVwgG0J0aezrE+O/VIJ/nE5LGJUm73OXwE9AtcVKlFb5+lQ==}
 
-  '@cbrl/next@0.1.0':
-    resolution: {integrity: sha512-gRPtgloKGr1R8C8oLxnKrhVBLRTv0p1NYegiZMCZCvnzo8bXvBvDX8hEHeZdQQwBQDst0fNJkNke00jJnhLpDg==}
+  '@cbrl/next@0.1.1':
+    resolution: {integrity: sha512-gM0UiCwOGxP7iBA1B8owT5cr/xTjVdlWkvBMPV0cP2OpJNHIdXE5FSnUntQ4aBJYmp2BV2JnqQWhdMwh/NqRtg==}
     peerDependencies:
       next: ^16.0.0
 
@@ -349,8 +349,8 @@ packages:
       prettier: ^3.0.0
       typescript: '>=5.0.0 <7'
 
-  '@cbrl/supabase@0.1.0':
-    resolution: {integrity: sha512-MZ28n1/2/wr+MuV5vvmDnbUqps2koeXx3+Ci+nOvZ6mEVqypez5LzeoXk79s/wVJM0ccOZXbZnZxr0D6KaQdTA==}
+  '@cbrl/supabase@0.1.1':
+    resolution: {integrity: sha512-N1S7wt1CJueceq3RLJ/T26yNnXoitWBQ3DhViLw0q2Rgkr54scvNjVbbYfxDB7zOXyGPl9ruao4Xr7yUmMVdxA==}
     peerDependencies:
       '@supabase/ssr': ^0.12.0
       '@supabase/supabase-js': ^2.119.0
@@ -6144,7 +6144,7 @@ snapshots:
 
   '@cbrl/log@0.1.0': {}
 
-  '@cbrl/next@0.1.0(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))':
+  '@cbrl/next@0.1.1(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))':
     dependencies:
       next: 16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
 
@@ -6180,7 +6180,7 @@ snapshots:
       - prettier-plugin-svelte
       - vue-tsc
 
-  '@cbrl/supabase@0.1.0(@supabase/ssr@0.12.7(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1)))(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1))(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)':
+  '@cbrl/supabase@0.1.1(@supabase/ssr@0.12.7(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1)))(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1))(next@16.4.5(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@supabase/ssr': 0.12.7(@supabase/supabase-js@2.119.1(@opentelemetry/api@1.9.1))
       '@supabase/supabase-js': 2.119.1(@opentelemetry/api@1.9.1)
