@@ -24,7 +24,7 @@ const commitSha = (() => {
   }
 })()
 
-// Defesa em profundidade. Ver SECURITY.md.
+// Defesa em profundidade.
 // Browser fala com Supabase (Auth + Storage) e MapTiler (mapa). Login Google é
 // redirect (sem popup/iframe), então não precisa de script/frame do Google.
 const supabaseOrigin = supabaseUrl ? supabaseUrl.origin : 'https://*.supabase.co'

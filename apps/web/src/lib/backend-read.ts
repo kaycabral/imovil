@@ -3,13 +3,13 @@ export const BACKEND_READ_TIMEOUT_MS = 4_000
 export type BackendRead<T> = { ok: true; data: T } | { ok: false }
 
 /**
- * Runs a server-side backend read (Firestore, Auth, Remote Config) so that an
+ * Runs a server-side backend read (Postgres, Supabase Auth) so that an
  * unavailable backend degrades the page instead of crashing it.
  *
- * Covers the three ways the Admin SDK fails when the backend is not there:
- *   - throws synchronously (missing project env → `requireEnvOneOf`)
+ * Covers the three ways a read fails when the backend is not there:
+ *   - throws synchronously (missing env → `requireEnv*`)
  *   - rejects (bad credentials, permission, network)
- *   - hangs (emulator host configured but not running; gRPC keeps retrying)
+ *   - hangs (the database or the local stack does not answer)
  *
  * The caller decides what the degraded UI looks like from `ok: false`.
  */

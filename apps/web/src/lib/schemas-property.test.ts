@@ -29,7 +29,7 @@ function validInput() {
     images: [
       {
         path: 'properties/uid/tmp/a.jpg',
-        src: 'https://firebasestorage.googleapis.com/fake.jpg',
+        src: 'https://example.supabase.co/storage/v1/object/public/property-images/fake.jpg',
         alt: 'a',
       },
     ],
