@@ -1,0 +1,94 @@
+# Every quality gate, as one reusable pipeline. Callers own the trigger and the
+# concurrency policy: pull-request.yml (every PR), main.yml (fallback when a push
+# to main was not proven by a PR) and nightly.yml (drift on an unchanged main).
+# Shared steps come from kaycabral/toolkit, pinned to a commit SHA.
+name: Checks
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  static:
+    name: Static (format · lint · types · migrations)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      # drizzle.config.ts requires a URL; check/generate never connect.
+      POSTGRES_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - uses: kaycabral/toolkit/.github/actions/drizzle-migrations@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+        with:
+          folders: packages/db/drizzle
+          check: pnpm --filter @imovil/db exec drizzle-kit check
+          generate: pnpm --filter @imovil/db run db:generate
+
+  unit:
+    name: Unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+      - run: pnpm test
+
+  # Postgres integration suite + production build against the LOCAL Supabase
+  # stack (Docker): the migrations reference the `auth`/`storage` schemas that
+  # only a Supabase Postgres ships, so a plain postgres service is not enough.
+  integration:
+    name: Integration (Postgres) · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      POSTGRES_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+      - run: pnpm --filter @imovil/web run db:start
+      - run: pnpm --filter @imovil/db run test:integration:pg
+      - run: pnpm build
+
+  # Playwright E2E against the LOCAL Supabase stack, on the production build
+  # (playwright.config.ts switches `next dev` → `next build && next start` when
+  # CI is set).
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+      - run: pnpm --filter @imovil/web run db:start
+      - uses: kaycabral/toolkit/.github/actions/playwright@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+        with:
+          working-directory: apps/web
+      - run: pnpm --filter @imovil/web run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          retention-days: 7

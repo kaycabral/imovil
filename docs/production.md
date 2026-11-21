@@ -10,14 +10,14 @@ Runbook do ambiente de produção do imovil: o que roda onde, como mudança cheg
 | Postgres, Auth, Storage | Supabase, região `sa-east-1` (São Paulo)                       |
 | Funções (SSR, actions)  | Vercel `gru1` (São Paulo), fixado em `apps/web/vercel.json`    |
 | Login                   | Só Google (provider Google do Supabase Auth)                   |
-| Migrations              | GitHub Actions, job `migrate-production` do `ci.yml`           |
+| Migrations              | GitHub Actions, job `migrate-production` do `main.yml`         |
 
 **Ninguém acessa o banco de produção da própria máquina.** Dev local roda inteiro no stack Supabase em Docker (`pnpm --filter @imovil/web db:start`); a URL do banco de prod existe só no secret do GitHub e nas envs da Vercel.
 
 ## Fluxo de uma mudança
 
-1. PR → CI: lint, typecheck, unit, suíte Postgres + build contra o stack local (migrations aplicadas do zero), e o job `migrations` (journal consistente, `schema.ts` sem drift, migrations da `main` imutáveis).
-2. Merge na `main` → CI roda de novo (checks, integração Postgres, migrations e E2E); com tudo verde, `migrate-production` aplica as migrations pendentes em prod (no-op quando não há). Se algum job falhar, `migrate-production` **falha** em vez de ser pulado (um check "skipped" passaria no Deployment Check da Vercel).
+1. PR → `pull-request.yml`: roda `checks.yml` (format, lint, typecheck, higiene de migrations, unit, suíte Postgres + build contra o stack local, E2E) e o dependency review. O ruleset da `main` exige o check `CI passed` com a branch atualizada.
+2. Merge na `main` → `main.yml`: o job `provenance` confirma pela API que a árvore do commit é idêntica à do head de um PR com `CI passed` verde. Confirmado, não re-roda nada; não confirmado (push direto via bypass, PR desatualizado), roda o pipeline completo antes. Então `migrate-production` aplica as migrations pendentes em prod (no-op quando não há). Commit não provado → `migrate-production` **falha** em vez de ser pulado (um check "skipped" passaria no Deployment Check da Vercel).
 3. Vercel builda o mesmo commit e só promove pra produção depois do check `migrate-production` passar (Deployment Checks). O código novo nunca entra no ar antes do schema que ele usa.
 
 ## Regras de migration
@@ -40,6 +40,7 @@ Runbook do ambiente de produção do imovil: o que roda onde, como mudança cheg
 
 ### GitHub
 
+- Ruleset `protect-main`: toda mudança via PR, com o check `CI passed` obrigatório e a branch atualizada (é o que permite ao `provenance` não re-rodar os checks na `main`).
 - Environment `production`, restrito à branch `main`.
 - Secret do environment `POSTGRES_URL_NON_POOLING`: connection string do **session pooler** (porta 5432) do Supabase — `postgresql://postgres.<ref>:<senha>@aws-<n>-sa-east-1.pooler.supabase.com:5432/postgres`. O host direto `db.<ref>.supabase.co` é só IPv6 e os runners do GitHub não alcançam; o pooler de transação (6543) não suporta o advisory lock do migrator.
 
