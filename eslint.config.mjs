@@ -1,6 +1,3 @@
-// Root ESLint config: picked up by lint-staged and by workspaces without their own
-// eslint.config.mjs (each still runs `eslint .` from its own dir, with its own
-// eslint-suppressions.json).
 import baseConfig from '@cbrl/eslint-config'
 
 export default [
@@ -8,9 +5,12 @@ export default [
   {
     ignores: ['.husky/**'],
   },
+  // Server code logs through `@cbrl/log` (structured, PII-redacted, correlation
+  // id); `@cbrl/log` is Node-only, so client code surfaces failures in the UI
+  // instead. Scripts and tests may print.
   {
-    files: ['packages/*/src/**/*.ts'],
-    ignores: ['packages/*/src/**/*.test.ts'],
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
     rules: { 'no-console': 'error' },
   },
 ]

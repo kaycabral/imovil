@@ -1,6 +1,5 @@
-packages:
-  - apps/*
-  - packages/*
+# Single-package repo: this file exists only for pnpm settings that pnpm reads
+# from here (no workspaces, no catalog).
 
 # Supply-chain quarantine (minutes): resolution never picks a version published
 # less than 3 days ago, the window in which compromised releases get yanked.
@@ -8,43 +7,3 @@ packages:
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@cbrl/*'
-
-# Single source of truth for shared dependency versions. Bump = edit here +
-# `pnpm install`. Deps used by a single workspace stay inline in its package.json.
-catalog:
-  '@hookform/resolvers': ^5.9.2
-  '@playwright/test': ^1.65.1
-  '@supabase/ssr': ^0.12.7
-  '@supabase/supabase-js': ^2.119.1
-  '@tailwindcss/postcss': ^4.3.5
-  '@tailwindcss/typography': ^0.5.20
-  '@testing-library/jest-dom': ^6.9.1
-  '@testing-library/react': ^16.3.3
-  '@testing-library/user-event': ^14.6.12
-  '@types/node': ^25.9.9
-  '@types/pg': ^8.23.1
-  '@types/react': ^19.3.0
-  '@types/react-dom': ^19.3.0
-  '@vitejs/plugin-react': ^6.3.0
-  '@vitest/coverage-v8': ^4.1.12
-  drizzle-kit: ^0.31.11
-  drizzle-orm: ~0.45.4
-  eslint-config-next: ^16.4.6
-  jsdom: ^29.1.1
-  lucide-react: ^1.75.0
-  next-themes: ^0.4.6
-  pg: ^8.23.1
-  radix-ui: ^1.8.1
-  react: ^19.3.1
-  react-dom: ^19.3.1
-  react-hook-form: ^7.92.0
-  react-markdown: ^10.1.0
-  remark-gfm: ^4.0.1
-  server-only: ^0.0.1
-  sonner: ^2.0.8
-  tailwindcss: ^4.3.5
-  tsx: ^4.23.15
-  typescript: ^5.9.3
-  vite: ^8.1.7
-  vitest: ^4.1.12
-  zod: ^4.6.7
