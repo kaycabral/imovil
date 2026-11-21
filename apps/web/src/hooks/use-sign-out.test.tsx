@@ -20,7 +20,7 @@ const signOut = vi.fn(() => {
   return Promise.resolve({ error: null })
 })
 let clientConfigured = true
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock('@cbrl/supabase/client', () => ({
   getSupabaseBrowserClient: () => (clientConfigured ? { auth: { signOut } } : null),
 }))
 

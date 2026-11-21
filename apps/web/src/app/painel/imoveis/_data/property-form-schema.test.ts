@@ -1,26 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
-  formatPostalCode,
   PROPERTY_FORM_DEFAULTS,
   propertyFormSchema,
   type PropertyFormValues,
 } from './property-form-schema'
-
-describe('formatPostalCode', () => {
-  it('formats 8 digits as the DDDDD-DDD CEP mask', () => {
-    expect(formatPostalCode('01310100')).toBe('01310-100')
-  })
-
-  it('leaves 5 or fewer digits unmasked', () => {
-    expect(formatPostalCode('013')).toBe('013')
-    expect(formatPostalCode('01310')).toBe('01310')
-  })
-
-  it('strips non-digits and truncates past 8', () => {
-    expect(formatPostalCode('01.310-100')).toBe('01310-100')
-    expect(formatPostalCode('013101009')).toBe('01310-100')
-  })
-})
 
 // Spread the empty-form defaults, then fill the required fields so the base is
 // valid. Each invalid case below tweaks one field to assert its rule fires.

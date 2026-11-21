@@ -1,5 +1,5 @@
 import { desc } from 'drizzle-orm'
-import { getImovilDb } from '../pool'
+import { imovilDb } from '../db'
 import { changelog } from '../schema'
 
 export type Release = {
@@ -10,7 +10,8 @@ export type Release = {
 }
 
 export async function listReleases(limit: number): Promise<Release[]> {
-  const rows = await getImovilDb()
+  const rows = await imovilDb
+    .db()
     .select()
     .from(changelog)
     .orderBy(desc(changelog.publishedAt))

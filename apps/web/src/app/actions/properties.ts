@@ -5,11 +5,11 @@ import {
   getProfile,
   getPropertyById,
   insertProperty,
-  isUniqueViolation,
   updateProperty as writeProperty,
   setPropertyStatus as writePropertyStatus,
 } from '@/lib/db'
 import { geocodeAddress } from '@/lib/geocode'
+import { isUniqueViolation } from '@cbrl/pg'
 import {
   propertyCreateSchema,
   propertyStatusSchema,

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import type { ImovilDb } from './pool'
+import type { ImovilDb } from './db'
 import { profiles, properties } from './schema'
 
 export type SeedUserInput = {

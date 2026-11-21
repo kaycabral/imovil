@@ -1,7 +1,7 @@
 'use client'
 
-import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { PROPERTY_IMAGES_BUCKET, propertyImagePath } from '@/lib/supabase/storage'
+import { getSupabaseBrowserClient } from '@cbrl/supabase/client'
 import { type PropertyImage } from '@imovil/shared'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -61,11 +61,9 @@ export function usePropertyImages({ initialImages = [] }: { initialImages?: Prop
         setImages((prev) => [...prev, ...uploaded])
       }
     } catch (err) {
-      // Rollback: remove do Storage o que já tinha subido antes do erro.
-      await removeFromStorage(uploaded.map((img) => img.path)).catch((cleanupErr: unknown) =>
-        console.error('[upload:rollback]', cleanupErr),
-      )
-      console.error('[upload]', err)
+      // Rollback: remove do Storage o que já tinha subido antes do erro (best
+      // effort: a falha aqui só deixa arquivo órfão na pasta do próprio usuário).
+      await removeFromStorage(uploaded.map((img) => img.path)).catch(() => undefined)
       const message =
         err instanceof Error && err.message ? err.message : 'Falha no upload. Tente novamente.'
       toast.error(message)
@@ -75,11 +73,8 @@ export function usePropertyImages({ initialImages = [] }: { initialImages?: Prop
   }
 
   async function removeImage(image: PropertyImage) {
-    try {
-      await removeFromStorage([image.path])
-    } catch (err) {
-      console.error(err)
-    }
+    // Best effort: a failed delete only leaves an orphan in the user's own folder.
+    await removeFromStorage([image.path]).catch(() => undefined)
     setImages((prev) => prev.filter((i) => i.path !== image.path))
   }
 
@@ -87,9 +82,7 @@ export function usePropertyImages({ initialImages = [] }: { initialImages?: Prop
     const imagesToDelete = images
     setImages([])
     setImageError(null)
-    removeFromStorage(imagesToDelete.map((img) => img.path)).catch((err: unknown) =>
-      console.error('[clear]', err),
-    )
+    removeFromStorage(imagesToDelete.map((img) => img.path)).catch(() => undefined)
   }
 
   return {

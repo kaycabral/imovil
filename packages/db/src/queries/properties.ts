@@ -1,6 +1,6 @@
 import type { Property, PropertyCoords, PropertyStatus } from '@imovil/shared'
 import { and, desc, eq, sql, type SQL } from 'drizzle-orm'
-import { getImovilDb } from '../pool'
+import { imovilDb } from '../db'
 import { properties } from '../schema'
 
 type PropertyRow = typeof properties.$inferSelect
@@ -40,7 +40,8 @@ export async function listProperties(options: ListPropertiesOptions = {}): Promi
   const filters: SQL[] = []
   if (options.status) filters.push(eq(properties.status, options.status))
   if (options.ownerId) filters.push(eq(properties.ownerId, options.ownerId))
-  const rows = await getImovilDb()
+  const rows = await imovilDb
+    .db()
     .select()
     .from(properties)
     .where(filters.length ? and(...filters) : undefined)
@@ -49,7 +50,8 @@ export async function listProperties(options: ListPropertiesOptions = {}): Promi
 }
 
 export async function getPropertyBySlug(slug: string): Promise<Property | null> {
-  const [row] = await getImovilDb()
+  const [row] = await imovilDb
+    .db()
     .select()
     .from(properties)
     .where(eq(properties.slug, slug))
@@ -62,7 +64,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /** Null for unknown ids — including malformed ones from a URL, which Postgres would reject. */
 export async function getPropertyById(id: string): Promise<Property | null> {
   if (!UUID.test(id)) return null
-  const [row] = await getImovilDb().select().from(properties).where(eq(properties.id, id)).limit(1)
+  const [row] = await imovilDb.db().select().from(properties).where(eq(properties.id, id)).limit(1)
   return row ? toProperty(row) : null
 }
 
@@ -73,7 +75,8 @@ export async function insertProperty(
   input: PropertyWrite,
 ): Promise<{ id: string; slug: string }> {
   const { coords, ...data } = input
-  const [row] = await getImovilDb()
+  const [row] = await imovilDb
+    .db()
     .insert(properties)
     .values({ ...data, ...coordColumns(coords), ownerId, slug, status: 'draft' })
     .returning({ id: properties.id, slug: properties.slug })
@@ -83,14 +86,16 @@ export async function insertProperty(
 
 export async function updateProperty(id: string, input: PropertyWrite): Promise<void> {
   const { coords, ...data } = input
-  await getImovilDb()
+  await imovilDb
+    .db()
     .update(properties)
     .set({ ...data, ...coordColumns(coords), updatedAt: sql`now()` })
     .where(eq(properties.id, id))
 }
 
 export async function setPropertyStatus(id: string, status: PropertyStatus): Promise<void> {
-  await getImovilDb()
+  await imovilDb
+    .db()
     .update(properties)
     .set({ status, updatedAt: sql`now()` })
     .where(eq(properties.id, id))

@@ -1,4 +1,4 @@
-import type { SessionUser } from '@/lib/auth/session-user'
+import type { SessionUser } from '@cbrl/supabase'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { updateBrokerProfile } from './profile'
 
@@ -18,7 +18,14 @@ vi.mock('next/cache', () => ({
   revalidatePath: (path: string) => revalidatePath(path),
 }))
 
-const user: SessionUser = { id: 'u1', email: 'u1@example.com', name: 'Ana', avatarUrl: null }
+const user: SessionUser = {
+  id: 'u1',
+  email: 'u1@example.com',
+  name: 'Ana',
+  avatarUrl: null,
+  emailVerified: true,
+  appMetadata: {},
+}
 
 beforeEach(() => {
   getServerUser.mockResolvedValue(user)

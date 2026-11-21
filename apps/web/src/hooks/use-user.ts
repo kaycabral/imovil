@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-import { toSessionUser, type SessionUser } from '@/lib/auth/session-user'
-import { getSupabaseBrowserClient } from '@/lib/supabase/client'
-import { supabasePublicConfig } from '@/lib/supabase/config'
+import { isSupabaseConfigured, sessionUserFromAuthUser, type SessionUser } from '@cbrl/supabase'
+import { getSupabaseBrowserClient } from '@cbrl/supabase/client'
 
 type UserState = { user: SessionUser | null; loading: boolean }
 
@@ -16,7 +15,7 @@ type UserState = { user: SessionUser | null; loading: boolean }
 export function useUser(): UserState {
   const [state, setState] = useState<UserState>(() => ({
     user: null,
-    loading: supabasePublicConfig() !== null,
+    loading: isSupabaseConfigured(),
   }))
 
   useEffect(() => {
@@ -24,13 +23,7 @@ export function useUser(): UserState {
     if (!supabase) return
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setState({
-        user: session
-          ? toSessionUser({
-              id: session.user.id,
-              email: session.user.email,
-              metadata: session.user.user_metadata,
-            })
-          : null,
+        user: session ? sessionUserFromAuthUser(session.user) : null,
         loading: false,
       })
     })

@@ -1,10 +1,10 @@
 import 'server-only'
 
 import { readBackend } from '@/lib/backend-read'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { sessionUserFromClaims, type SessionUser } from '@cbrl/supabase'
+import { createSupabaseServerClient } from '@cbrl/supabase/server'
 import { isAuthSessionMissingError } from '@supabase/supabase-js'
 import { cache } from 'react'
-import { toSessionUser, type SessionUser } from './session-user'
 
 /**
  * The verified signed-in user for this request, or null. `getClaims()` checks
@@ -20,7 +20,5 @@ export const getServerUser = cache(async (): Promise<SessionUser | null> => {
     if (error && !isAuthSessionMissingError(error)) throw error
     return data?.claims ?? null
   })
-  if (!result.ok || !result.data) return null
-  const claims = result.data
-  return toSessionUser({ id: claims.sub, email: claims.email, metadata: claims.user_metadata })
+  return result.ok && result.data ? sessionUserFromClaims(result.data) : null
 })

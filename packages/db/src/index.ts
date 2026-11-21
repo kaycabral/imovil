@@ -1,6 +1,4 @@
-export { isUniqueViolation } from './errors'
-export { runImovilMigrations } from './migrate'
-export { closeImovilDb, getImovilDb, pingImovilDb, type ImovilDb } from './pool'
+export { imovilDb, type ImovilDb } from './db'
 export { listReleases, type Release } from './queries/changelog'
 export { getProfile, updateProfileContact, type Profile } from './queries/profiles'
 export {

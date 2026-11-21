@@ -4,7 +4,6 @@ import { useGoogleSignIn } from '@/hooks/use-google-sign-in'
 import { useSignOut } from '@/hooks/use-sign-out'
 import { useUser } from '@/hooks/use-user'
 import type { Features } from '@/lib/features'
-import { initials } from '@/lib/initials'
 import { getNavItems, isActive, type NavItem } from '@/lib/painel-nav'
 import {
   Avatar,
@@ -17,6 +16,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  initials,
   Sheet,
   SheetClose,
   SheetContent,

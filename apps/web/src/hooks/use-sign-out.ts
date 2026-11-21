@@ -1,7 +1,7 @@
 'use client'
 
 import { clearAllDrafts } from '@/app/painel/imoveis/_hooks/property-draft-storage'
-import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@cbrl/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
 

@@ -1,8 +1,7 @@
 'use client'
 
 import { updateBrokerProfile } from '@/app/actions/profile'
-import { initials } from '@/lib/initials'
-import { formatPhoneBR } from '@/lib/phone'
+import { maskBrazilPhone, normalizeBrazilPhone } from '@cbrl/br/phone'
 import {
   Avatar,
   AvatarFallback,
@@ -10,6 +9,7 @@ import {
   Button,
   Card,
   CardContent,
+  initials,
   Input,
   Label,
 } from '@cbrl/design'
@@ -36,8 +36,7 @@ export function ProfileForm({
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
-    const digits = phone.replace(/\D/g, '')
-    if (digits.length < 10) {
+    if (normalizeBrazilPhone(phone) === null) {
       setError('Informe um celular válido com DDD.')
       return
     }
@@ -56,8 +55,7 @@ export function ProfileForm({
         return
       }
       toast.success('Perfil atualizado.')
-    } catch (err) {
-      console.error(err)
+    } catch {
       setError('Não foi possível salvar. Tente novamente.')
     } finally {
       setSaving(false)
@@ -94,7 +92,7 @@ export function ProfileForm({
               inputMode="tel"
               placeholder="(92) 99000-0000"
               value={phone}
-              onChange={(e) => setPhone(formatPhoneBR(e.target.value))}
+              onChange={(e) => setPhone(maskBrazilPhone(e.target.value))}
             />
           </div>
 

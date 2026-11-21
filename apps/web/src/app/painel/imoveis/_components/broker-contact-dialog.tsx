@@ -1,6 +1,6 @@
 'use client'
 
-import { formatPhoneBR } from '@/lib/phone'
+import { maskBrazilPhone, normalizeBrazilPhone } from '@cbrl/br/phone'
 import {
   Button,
   Dialog,
@@ -40,8 +40,7 @@ export function BrokerContactDialog({
   }, [open, initialCreci])
 
   async function handleConfirm() {
-    const digits = phoneValue.replace(/\D/g, '')
-    if (digits.length < 10) {
+    if (normalizeBrazilPhone(phoneValue) === null) {
       setError('Informe um celular válido com DDD.')
       return
     }
@@ -54,8 +53,7 @@ export function BrokerContactDialog({
     setSaving(true)
     try {
       await onSubmit(phoneValue.trim(), creci)
-    } catch (err) {
-      console.error(err)
+    } catch {
       setError('Não foi possível salvar. Tente novamente.')
     } finally {
       setSaving(false)
@@ -80,7 +78,7 @@ export function BrokerContactDialog({
               inputMode="tel"
               placeholder="(92) 99000-0000"
               value={phoneValue}
-              onChange={(e) => setPhoneValue(formatPhoneBR(e.target.value))}
+              onChange={(e) => setPhoneValue(maskBrazilPhone(e.target.value))}
               autoFocus
             />
           </div>

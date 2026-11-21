@@ -8,4 +8,9 @@ export default [
   {
     ignores: ['.husky/**'],
   },
+  {
+    files: ['packages/*/src/**/*.ts'],
+    ignores: ['packages/*/src/**/*.test.ts'],
+    rules: { 'no-console': 'error' },
+  },
 ]

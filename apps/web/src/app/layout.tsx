@@ -1,6 +1,5 @@
 import { AutoSignIn } from '@/components/auto-sign-in'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@cbrl/design'
+import { ThemeProvider, Toaster } from '@cbrl/design'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'

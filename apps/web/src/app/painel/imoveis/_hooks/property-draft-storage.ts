@@ -1,5 +1,6 @@
+import type { PostalCodeAddress } from '@cbrl/br/postal-code'
 import { type PropertyImage } from '@imovil/shared'
-import { type PostalCodeLookup, type PropertyFormValues } from '../_data/property-form-schema'
+import { type PropertyFormValues } from '../_data/property-form-schema'
 
 export const DRAFT_KEY_PREFIX = 'property-form:draft:'
 
@@ -12,7 +13,7 @@ export type PersistedDraft = {
   values: PropertyFormValues
   images: PropertyImage[]
   postalCodeInput: string
-  postalCodeResult: PostalCodeLookup | null
+  postalCodeResult: PostalCodeAddress | null
   savedAt: number
 }
 

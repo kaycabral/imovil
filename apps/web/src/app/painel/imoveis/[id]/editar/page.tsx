@@ -1,6 +1,7 @@
 import { Container } from '@/components/container'
 import { getServerUser } from '@/lib/auth/server'
 import { getProfile, getPropertyById } from '@/lib/db'
+import { maskPostalCode } from '@cbrl/br/postal-code'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '../../../_components/page-header'
@@ -15,12 +16,6 @@ export const metadata: Metadata = {
 }
 
 type PageProps = { params: Promise<{ id: string }> }
-
-function formatPostalCodeDisplay(raw: string): string {
-  const digits = raw.replace(/\D/g, '').slice(0, 8)
-  if (digits.length <= 5) return digits
-  return `${digits.slice(0, 5)}-${digits.slice(5)}`
-}
 
 export default async function EditPropertyPage({ params }: PageProps) {
   const { id } = await params
@@ -65,7 +60,7 @@ export default async function EditPropertyPage({ params }: PageProps) {
       descriptionText: property.description.join('\n\n'),
     },
     images: property.images,
-    postalCodeInput: formatPostalCodeDisplay(property.postalCode),
+    postalCodeInput: maskPostalCode(property.postalCode),
     postalCodeResult: property.postalCode
       ? {
           postalCode: property.postalCode,

@@ -1,11 +1,11 @@
 'use client'
 
+import { safeNext } from '@cbrl/next'
+import { isSupabaseConfigured } from '@cbrl/supabase'
+import { useGoogleSignIn as useSupabaseGoogleSignIn } from '@cbrl/supabase/react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
-
-import { safeNext } from '@/lib/safe-next'
-import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 const AUTH_PARAMS = ['login', 'login_error', 'next']
 
@@ -17,36 +17,30 @@ function currentPath(pathname: string, searchParams: URLSearchParams): string {
   return qs ? `${pathname}?${qs}` : pathname
 }
 
+function notifySignInFailure(): void {
+  toast.error('Não foi possível entrar com o Google. Tenta de novo.')
+}
+
 /**
- * Google sign-in through Supabase Auth (OAuth + PKCE). Redirects the whole page
- * to Google and back through `/auth/callback`, which sets the session cookie and
- * lands on the `next` param (same-origin) or the page the user was on.
+ * Google sign-in (`@cbrl/supabase/react`) landing on the `next` param
+ * (same-origin) or the page the user was on, with the app's toasts.
  */
 export function useGoogleSignIn() {
-  const [loading, setLoading] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const next = safeNext(searchParams.get('next'), null) ?? currentPath(pathname, searchParams)
+  const { signIn: startSignIn, pending } = useSupabaseGoogleSignIn({
+    next,
+    onError: notifySignInFailure,
+  })
 
-  async function signIn() {
-    if (loading) return
-    const supabase = getSupabaseBrowserClient()
-    if (!supabase) {
+  const signIn = useCallback(async () => {
+    if (!isSupabaseConfigured()) {
       toast.error('Login indisponível no momento. Tenta de novo mais tarde.')
       return
     }
-    setLoading(true)
-    const next = safeNext(searchParams.get('next')) ?? currentPath(pathname, searchParams)
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo },
-    })
-    if (error) {
-      toast.error('Não foi possível entrar com o Google. Tenta de novo.')
-      setLoading(false)
-    }
-    // On success the browser is already navigating to Google; keep `loading`.
-  }
+    await startSignIn()
+  }, [startSignIn])
 
-  return { signIn, loading }
+  return { signIn, loading: pending }
 }

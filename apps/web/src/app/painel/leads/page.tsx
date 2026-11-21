@@ -1,7 +1,8 @@
 import { Container } from '@/components/container'
 import { getPropertyBySlug } from '@/lib/db'
 import { getFeatures } from '@/lib/features'
-import { Badge, Button, Card } from '@cbrl/design'
+import { whatsappUrl } from '@cbrl/br/phone'
+import { Badge, Button, Card, initials } from '@cbrl/design'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FilterChip, FilterChipRow } from '../_components/filter-chip'
@@ -75,8 +76,8 @@ export default async function LeadsListPage({ searchParams }: { searchParams: Se
           <ul className="divide-y">
             {leads.map((lead, i) => {
               const prop = leadProperties[i] ?? null
-              const waNumber = lead.phone.replace(/\D/g, '')
-              const waText = `Olá ${lead.name.split(' ')[0]}, tudo bem?`
+              const phoneDigits = lead.phone.replace(/\D/g, '')
+              const waHref = whatsappUrl(lead.phone, `Olá ${lead.name.split(' ')[0]}, tudo bem?`)
               return (
                 <li
                   key={lead.id}
@@ -84,11 +85,7 @@ export default async function LeadsListPage({ searchParams }: { searchParams: Se
                 >
                   <div className="flex items-start gap-3 md:flex-1">
                     <div className="bg-secondary text-secondary-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
-                      {lead.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .slice(0, 2)
-                        .join('')}
+                      {initials(lead.name)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -118,27 +115,25 @@ export default async function LeadsListPage({ searchParams }: { searchParams: Se
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="h-auto rounded-full px-3 py-1.5 text-xs"
-                    >
-                      <a
-                        href={`https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`}
-                        target="_blank"
-                        rel="noreferrer"
+                    {waHref && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="h-auto rounded-full px-3 py-1.5 text-xs"
                       >
-                        WhatsApp
-                      </a>
-                    </Button>
+                        <a href={waHref} target="_blank" rel="noreferrer">
+                          WhatsApp
+                        </a>
+                      </Button>
+                    )}
                     <Button
                       asChild
                       variant="outline"
                       size="sm"
                       className="h-auto rounded-full px-3 py-1.5 text-xs tabular-nums"
                     >
-                      <a href={`tel:${waNumber}`}>{lead.phone}</a>
+                      <a href={`tel:${phoneDigits}`}>{lead.phone}</a>
                     </Button>
                   </div>
                 </li>

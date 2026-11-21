@@ -1,5 +1,6 @@
 'use client'
 
+import type { PostalCodeAddress } from '@cbrl/br/postal-code'
 import {
   type Dispatch,
   type MutableRefObject,
@@ -10,7 +11,7 @@ import {
 import { type UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { type PostalCodeLookup, type PropertyFormValues } from '../_data/property-form-schema'
+import { type PropertyFormValues } from '../_data/property-form-schema'
 
 const errorBodySchema = z.object({ error: z.string().optional() }).catch({})
 const postalCodeLookupSchema = z.object({
@@ -19,7 +20,7 @@ const postalCodeLookupSchema = z.object({
   city: z.string(),
   neighborhood: z.string(),
   street: z.string(),
-}) satisfies z.ZodType<PostalCodeLookup>
+}) satisfies z.ZodType<PostalCodeAddress>
 
 export function useCepLookup({
   postalCodeDigits,
@@ -32,7 +33,7 @@ export function useCepLookup({
   draftHydrated: boolean
   draftRestored: MutableRefObject<boolean>
   form: UseFormReturn<PropertyFormValues>
-  setPostalCodeResult: Dispatch<SetStateAction<PostalCodeLookup | null>>
+  setPostalCodeResult: Dispatch<SetStateAction<PostalCodeAddress | null>>
 }) {
   const [lookingUpPostalCode, setLookingUpPostalCode] = useState(false)
 
