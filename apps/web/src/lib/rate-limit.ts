@@ -1,12 +1,12 @@
 // Rate limit in-memory por IP. Implementação token-bucket simples, sem
 // dependência externa (Upstash, Redis, Cloudflare).
 //
-// LIMITAÇÃO conhecida: estado vive em memória do processo. Cloud Run com
-// `min_instances=0` reseta a cada cold start, e múltiplas réplicas têm
-// buckets independentes — atacante distribuído passa fácil. Cobre bem
-// abuso amador (1 IP varrendo) mas não DDoS coordenado.
+// LIMITAÇÃO conhecida: estado vive em memória de cada instância de função da
+// Vercel. Cold start zera os buckets e instâncias paralelas não compartilham
+// estado — atacante distribuído passa fácil. Cobre abuso amador (1 IP
+// varrendo) mas não DDoS coordenado.
 //
-// Pra robustez, migrar pra Upstash Redis ou Cloudflare Rate Limiting (#75)
+// Pra robustez, mover pro rate limiting do Vercel Firewall (sem estado no app)
 // quando aparecer demanda. Por ora basta — a base legal LGPD pra logar IP
 // aqui é legítimo interesse (segurança operacional).
 
@@ -65,7 +65,7 @@ export function createRateLimiter(opts: RateLimitOptions): RateLimiter {
   }
 }
 
-// Resolve o IP do cliente atrás do proxy do Cloud Run / App Hosting.
+// Resolve o IP do cliente atrás do proxy da Vercel.
 // `x-forwarded-for` chega como lista; o primeiro é o cliente original.
 // Fallback pra `127.0.0.1` em dev local.
 export function clientIp(req: Request): string {

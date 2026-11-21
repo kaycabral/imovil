@@ -7,7 +7,7 @@ describe('RouteError', () => {
   it('logs the error and retries the segment on demand', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     const retry = vi.fn()
-    const error = new Error('firestore down')
+    const error = new Error('database down')
 
     render(<RouteError error={error} unstable_retry={retry} />)
 

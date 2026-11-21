@@ -22,7 +22,7 @@ import { PropertyMap } from './_components/property-map'
 
 type PageProps = { params: Promise<{ slug: string }> }
 
-// Shared by generateMetadata + the page so one request reads Firestore once.
+// Shared by generateMetadata + the page so one request reads the database once.
 const loadProperty = cache((slug: string) =>
   readBackend(`property ${slug}`, () => getPropertyBySlug(slug)),
 )

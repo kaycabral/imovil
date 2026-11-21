@@ -104,7 +104,7 @@ export function usePropertyDraft({
   }, [uid, form, isEdit, initial, setImages, setPostalCodeInput, setPostalCodeResult])
 
   // Persiste o rascunho em localStorage a cada mudança — evita perder o preenchido em reload ou navegação.
-  // Apenas em create: em edit a fonte de verdade é o Firestore e não faz sentido guardar rascunho.
+  // Apenas em create: em edit a fonte de verdade é o banco e não faz sentido guardar rascunho.
   // PII: o rascunho contém endereço completo + preço; ttl + clearAllDrafts no logout
   // protegem contra leak em máquina compartilhada (ver property-draft-storage.ts).
   useEffect(() => {
