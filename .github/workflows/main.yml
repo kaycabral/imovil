@@ -1,0 +1,71 @@
+# Push to main: migrate the production schema, then Vercel promotes the deploy.
+#
+# `provenance` checks through the API that main's tree is the exact tree a PR
+# proved with `CI passed` (the ruleset requires it on an up-to-date branch), so
+# the checks don't run twice. When it can't (admin bypass, a PR merged while
+# stale), the full pipeline runs before anything touches production.
+name: Main
+
+on:
+  push:
+    branches: [main]
+  # Merges made with a GITHUB_TOKEN (dependabot-auto-merge.yml) don't fire
+  # `push`; they start this run explicitly. The `production` environment only
+  # accepts main, so a dispatch on any other ref can't deploy.
+  workflow_dispatch:
+
+# Never cancel: a run may be applying production migrations.
+concurrency:
+  group: main
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  provenance:
+    name: Provenance
+    uses: kaycabral/toolkit/.github/workflows/provenance.yml@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+
+  checks:
+    name: Checks
+    needs: provenance
+    if: needs.provenance.outputs.verified != 'true'
+    uses: ./.github/workflows/checks.yml
+    permissions:
+      contents: read
+
+  # Its name is the GitHub check Vercel's Deployment Checks wait on before
+  # promoting (docs/production.md): renaming it means changing it there too.
+  # `always()` matters: a skipped check counts as passing there, so this job
+  # fails explicitly whenever the commit is not proven.
+  migrate-production:
+    name: migrate-production
+    needs: [provenance, checks]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Commit is proven
+        if: >-
+          needs.provenance.result != 'success' ||
+          (needs.provenance.outputs.verified != 'true' && needs.checks.result != 'success')
+        run: |
+          echo "::error::This commit is not proven by a PR nor by a green pipeline; production is not migrated and the deploy must not be promoted."
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+      - name: Apply pending migrations
+        env:
+          # Supabase session pooler (port 5432): IPv4-reachable from runners and
+          # it keeps the session the migrator's advisory lock needs.
+          POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+        run: pnpm --filter @imovil/db run db:migrate

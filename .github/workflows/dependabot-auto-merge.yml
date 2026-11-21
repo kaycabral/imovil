@@ -1,0 +1,19 @@
+# Merges the Dependabot groups CI can prove (minor-and-patch, actions) once the
+# PR gate is green, then starts main.yml. See the reusable workflow for why.
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows: [Pull request]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  merge:
+    name: Merge
+    uses: kaycabral/toolkit/.github/workflows/dependabot-auto-merge.yml@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
