@@ -109,7 +109,7 @@
     "type-coverage": "^2.31.2",
     "typescript": "^5.9.3",
     "vite": "^8.1.7",
-    "vitest": "^4.1.12"
+    "vitest": "^5.1.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}": [
