@@ -70,7 +70,16 @@ jobs:
         with:
           persist-credentials: false
       - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
-      - run: pnpm db:start
+      # `supabase start` intermittently restarts the db container and then fails
+      # to bind its host port ("address already in use"). Tear the stack down
+      # and start once more before failing.
+      - name: Start the local Supabase stack
+        run: |
+          if ! pnpm db:start; then
+            echo "::warning::supabase start failed; tearing the stack down and retrying once."
+            pnpm exec supabase stop --no-backup --workdir .
+            pnpm db:start
+          fi
       - run: pnpm test:integration:pg
       - run: pnpm build
 
@@ -95,7 +104,16 @@ jobs:
         with:
           persist-credentials: false
       - uses: kaycabral/toolkit/.github/actions/setup@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
-      - run: pnpm db:start
+      # `supabase start` intermittently restarts the db container and then fails
+      # to bind its host port ("address already in use"). Tear the stack down
+      # and start once more before failing.
+      - name: Start the local Supabase stack
+        run: |
+          if ! pnpm db:start; then
+            echo "::warning::supabase start failed; tearing the stack down and retrying once."
+            pnpm exec supabase stop --no-backup --workdir .
+            pnpm db:start
+          fi
       - uses: kaycabral/toolkit/.github/actions/playwright@0dd0a4fa17c44d7ac401f8cc96bd0c4615cb56c1 # main
         with:
           working-directory: .
