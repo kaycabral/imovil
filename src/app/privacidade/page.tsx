@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: 'Política de privacidade do Imovil.',
 }
 
-const LAST_UPDATED = '2026-05-07'
+const LAST_UPDATED = '2026-11-23'
 const CONTACT_EMAIL = 'privacidade@cbrl.dev'
 
 export default function PrivacidadePage() {
@@ -31,8 +31,8 @@ export default function PrivacidadePage() {
         <h3>Visitantes (sem conta)</h3>
         <ul>
           <li>
-            <strong>Nada é coletado por padrão</strong>. Catálogo de imóveis é público; navegação
-            não exige conta.
+            <strong>Nenhum dado pessoal é coletado por padrão</strong>. Catálogo de imóveis é
+            público; navegação não exige conta.
           </li>
           <li>
             <strong>Endereço IP</strong>: registrado temporariamente em logs de plataforma para
@@ -73,7 +73,7 @@ export default function PrivacidadePage() {
             imóveis.
           </li>
           <li>
-            <strong>Vercel</strong>: hospedagem do site.
+            <strong>Vercel</strong>: hospedagem do site e medição anônima de audiência, sem cookies.
           </li>
           <li>
             <strong>Google</strong>: login com a sua conta Google (recebemos nome, e-mail e foto do
@@ -116,7 +116,7 @@ export default function PrivacidadePage() {
         <h2>Cookies</h2>
         <p>
           Usamos um cookie de sessão (<code>__session</code>) essencial pro login. Não usamos
-          analytics ou tracking. Se isso mudar, você verá um aviso e a política será atualizada.
+          cookies de analytics ou de rastreamento.
         </p>
 
         <h2>Encarregado de dados (DPO)</h2>
@@ -131,7 +131,10 @@ export default function PrivacidadePage() {
         <h2>Histórico de versões</h2>
         <ul>
           <li>
-            <strong>{LAST_UPDATED}</strong>: versão inicial.
+            <strong>{LAST_UPDATED}</strong>: medição anônima de audiência, sem cookies.
+          </li>
+          <li>
+            <strong>2026-05-07</strong>: versão inicial.
           </li>
         </ul>
       </div>

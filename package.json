@@ -58,6 +58,7 @@
     "@hookform/resolvers": "^7.0.6",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.2",
+    "@vercel/analytics": "^2.0.1",
     "drizzle-orm": "~0.45.4",
     "lucide-react": "^1.77.0",
     "maplibre-gl": "^6.19.0",
