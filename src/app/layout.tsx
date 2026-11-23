@@ -1,4 +1,5 @@
 import { AutoSignIn } from '@/components/auto-sign-in'
+import { WebAnalytics } from '@/components/web-analytics'
 import { ThemeProvider, Toaster } from '@cbrl/design'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
@@ -31,6 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AutoSignIn />
           <Toaster />
         </ThemeProvider>
+        {/* Only production deployments on Vercel serve the analytics endpoint. */}
+        {process.env.VERCEL_ENV === 'production' ? <WebAnalytics /> : null}
       </body>
     </html>
   )
