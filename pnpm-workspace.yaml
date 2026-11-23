@@ -1,5 +1,13 @@
-# Single-package repo: this file exists only for pnpm settings that pnpm reads
-# from here (no workspaces, no catalog).
+# Single-package repo: this file exists only for pnpm settings (no workspaces,
+# no catalog). They live here, not in .npmrc: npm 11 (Node 26) warns about
+# pnpm-only keys in .npmrc every time `npx` runs (husky hooks, preinstall).
+
+# hoisted: npm-style flat node_modules, same layout the code ran on inside the
+# cbrl monorepo (the code leans on hoisted @types/node and the eslint rules
+# resolve `typescript` from the root).
+nodeLinker: hoisted
+strictPeerDependencies: false
+autoInstallPeers: true
 
 # Supply-chain quarantine (minutes): resolution never picks a version published
 # less than 3 days ago, the window in which compromised releases get yanked.
