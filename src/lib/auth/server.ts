@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { readBackend } from '@/lib/backend-read'
+import { readBackend } from '@cbrl/next/server'
 import { sessionUserFromClaims, type SessionUser } from '@cbrl/supabase'
 import { createSupabaseServerClient } from '@cbrl/supabase/server'
 import { isAuthSessionMissingError } from '@supabase/supabase-js'
@@ -15,10 +15,13 @@ import { cache } from 'react'
 export const getServerUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createSupabaseServerClient()
   if (!supabase) return null
-  const result = await readBackend('session', async () => {
-    const { data, error } = await supabase.auth.getClaims()
-    if (error && !isAuthSessionMissingError(error)) throw error
-    return data?.claims ?? null
-  })
+  const result = await readBackend(
+    async () => {
+      const { data, error } = await supabase.auth.getClaims()
+      if (error && !isAuthSessionMissingError(error)) throw error
+      return data?.claims ?? null
+    },
+    { label: 'session' },
+  )
   return result.ok && result.data ? sessionUserFromClaims(result.data) : null
 })

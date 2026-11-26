@@ -1,13 +1,9 @@
 'use client'
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { formatAmountFromCents, maskBRLInput, parseBRLInput } from '@cbrl/br/money'
 import { Card, CardContent, Input, Switch } from '@cbrl/design'
 import { type FieldPath, type FieldValues, type UseFormReturn } from 'react-hook-form'
-
-const brlCentsFormatter = new Intl.NumberFormat('pt-BR', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
 
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -39,7 +35,7 @@ export function MoneyField<T extends FieldValues>({
       name={name}
       render={({ field }) => {
         const cents = typeof field.value === 'number' ? field.value : 0
-        const display = cents > 0 ? brlCentsFormatter.format(cents / 100) : ''
+        const display = cents > 0 ? formatAmountFromCents(cents) : ''
         return (
           <FormItem>
             <FormLabel>{label}</FormLabel>
@@ -72,8 +68,7 @@ export function MoneyField<T extends FieldValues>({
                     if (!/^\d$/.test(e.key)) e.preventDefault()
                   }}
                   onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '')
-                    field.onChange(digits === '' ? 0 : Number(digits))
+                    field.onChange(parseBRLInput(maskBRLInput(e.target.value)) ?? 0)
                   }}
                   onBlur={field.onBlur}
                   name={field.name}

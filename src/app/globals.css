@@ -1,6 +1,15 @@
 @import '@cbrl/design/globals.css';
 @plugin '@tailwindcss/typography';
 
+/*
+ * Keep the light theme on pure white instead of the DS surface tint: the public
+ * showcase is photo-heavy and listing photos read best on white. Dark mode
+ * follows the DS tokens.
+ */
+:root:not(.dark) {
+  --background: oklch(1 0 0);
+}
+
 @theme inline {
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
