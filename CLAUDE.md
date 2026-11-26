@@ -46,7 +46,7 @@ Ambiente local (stack Supabase via Docker): `pnpm db:start` (sobe o stack + `db:
 - **Auth** com `@cbrl/supabase` (sobre `@supabase/ssr`, sessão em cookie; clients `null` quando `NEXT_PUBLIC_SUPABASE_*` falta — o app degrada): `/client` no browser (Auth e Storage), `/server` no servidor; `src/proxy.ts` refresca a sessão (`updateSession`); `getServerUser()` (`@/lib/auth/server.ts`) usa `getClaims()` dentro de `readBackend`. **Nunca** confiar em `getSession()` no servidor.
 - **Login (Google, redirect)**: `useGoogleSignIn` (`@/hooks`) → Google → `/auth/callback` (`authCallbackRoute`) → `next` (same-origin). O perfil (`profiles`) nasce do trigger `on_auth_user_created`. Login de teste do E2E: `/api/e2e-signin`.
 - **Fotos**: bucket público `property-images`, upload direto do browser em `{userId}/…` (policies só permitem a pasta do próprio usuário).
-- **Degradação**: leitura de backend no servidor passa por `readBackend` (`@/lib/backend-read`, timeout + fallback); backend fora → estado "Tentar de novo".
+- **Degradação**: leitura de backend no servidor passa por `readBackend` (`@cbrl/next/server`, timeout + fallback); backend fora → estado "Tentar de novo".
 
 **Proibições:** `@/lib/db`, `@/db`, `@/lib/auth/server`, `@cbrl/supabase/server`, `@cbrl/log` em client components; acessar o banco pelo client do Supabase (PostgREST); chave secreta do Supabase no app (só existe no stack local, pra E2E/seed).
 

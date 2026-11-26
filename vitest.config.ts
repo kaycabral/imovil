@@ -17,23 +17,26 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    // `readBackend` lives in `@cbrl/next/server` and logs through `@cbrl/log`:
+    // inlining it lets `vi.mock('@cbrl/log')` reach that import too.
+    server: { deps: { inline: ['@cbrl/next'] } },
     include: ['src/**/*.test.{ts,tsx}'],
     // The Postgres suite needs the local Supabase stack: `vitest.pg.config.ts`.
     exclude: [...configDefaults.exclude, 'src/**/*.pg.test.ts'],
     // Unit-coverage ratchet (autoUpdate = one-way, só sobe). O seed honesto é
     // gravado pelo primeiro run com --coverage; piso anti-regressão depois.
     // Rebaixado uma vez ao adotar os pacotes @cbrl/*: o código bem testado que
-    // saiu do app (auth, BR utils, safeNext) leva os testes junto pro toolkit.
+    // saiu do app (auth, BR utils, safeNext, readBackend) leva os testes junto pro toolkit.
     coverage: {
       ...coverageBase(),
       // `src/db` is proven by the Postgres suite (`vitest.pg.config.ts`), not by
       // this one: counting its queries here would only dilute the ratchet.
       exclude: [...coverageBase().exclude, 'src/db/**'],
       thresholds: {
-        statements: 57.99,
-        branches: 47.08,
-        functions: 46.89,
-        lines: 59.27,
+        statements: 57.54,
+        branches: 47.14,
+        functions: 46.39,
+        lines: 58.87,
         autoUpdate: true,
       },
     },

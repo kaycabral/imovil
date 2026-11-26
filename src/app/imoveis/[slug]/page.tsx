@@ -5,12 +5,12 @@ import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
 import { getServerUser } from '@/lib/auth/server'
-import { readBackend } from '@/lib/backend-read'
 import { getPropertyBySlug } from '@/lib/db'
 import { getBrokerById } from '@/lib/properties/broker'
 import type { Property } from '@/shared'
 import { formatBRLFromCents } from '@cbrl/br/money'
 import { Badge, Button, Card, CardContent } from '@cbrl/design'
+import { readBackend } from '@cbrl/next/server'
 import { Car, MapPin, Package, PawPrint } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -24,7 +24,7 @@ type PageProps = { params: Promise<{ slug: string }> }
 
 // Shared by generateMetadata + the page so one request reads the database once.
 const loadProperty = cache((slug: string) =>
-  readBackend(`property ${slug}`, () => getPropertyBySlug(slug)),
+  readBackend(() => getPropertyBySlug(slug), { label: `property ${slug}` }),
 )
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -58,7 +58,7 @@ export default async function PropertyPage({ params }: PageProps) {
   const showOwnerStatusNotice = isOwner && property.status !== 'published'
 
   // Broker card is optional: if the profile read fails the listing still renders.
-  const brokerRead = await readBackend('broker', () => getBrokerById(property.ownerId))
+  const brokerRead = await readBackend(() => getBrokerById(property.ownerId), { label: 'broker' })
   const broker = brokerRead.ok ? brokerRead.data : null
 
   return (

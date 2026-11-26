@@ -3,8 +3,8 @@ import { BrandLink } from '@/components/brand-link'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { readBackend } from '@/lib/backend-read'
 import { listReleases, type Release } from '@/lib/db'
+import { readBackend } from '@cbrl/next/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
@@ -25,7 +25,7 @@ async function getReleases(): Promise<Release[]> {
   if (process.env.NEXT_PHASE === 'phase-production-build') return []
   // Database unavailable (env not configured, project paused, stack off) —
   // fall back to empty so the page still renders instead of 500-ing or hanging.
-  const result = await readBackend('changelog', () => listReleases(30))
+  const result = await readBackend(() => listReleases(30), { label: 'changelog' })
   return result.ok ? result.data : []
 }
 

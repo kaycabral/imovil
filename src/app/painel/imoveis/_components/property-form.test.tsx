@@ -223,6 +223,27 @@ describe('PropertyForm — MoneyField', () => {
     // "28", "5", "0" → 2850 cents → "28,50"
     expect(valueInput).toHaveValue('28,50')
   })
+
+  it('desloca dígitos a partir dos centavos sobre um valor já formatado', () => {
+    render(<PropertyForm profile={profileWithPhone} />)
+
+    const valueInput = screen.getByLabelText('Valor do aluguel')
+    fireEvent.change(valueInput, { target: { value: '1.234,56' } })
+    fireEvent.change(valueInput, { target: { value: '1.234,567' } })
+
+    expect(valueInput).toHaveValue('12.345,67')
+  })
+
+  it('esvazia o campo quando todos os dígitos são apagados', () => {
+    render(<PropertyForm profile={profileWithPhone} />)
+
+    const valueInput = screen.getByLabelText('Valor do aluguel')
+    fireEvent.change(valueInput, { target: { value: '5' } })
+    expect(valueInput).toHaveValue('0,05')
+    fireEvent.change(valueInput, { target: { value: '0,0' } })
+
+    expect(valueInput).toHaveValue('')
+  })
 })
 
 describe('PropertyForm — validation gates', () => {

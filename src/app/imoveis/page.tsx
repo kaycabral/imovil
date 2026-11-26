@@ -4,10 +4,10 @@ import { BrandLink } from '@/components/brand-link'
 import { Container } from '@/components/container'
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
-import { readBackend } from '@/lib/backend-read'
 import { listProperties } from '@/lib/db'
 import type { Property } from '@/shared'
 import { Button, Card } from '@cbrl/design'
+import { readBackend } from '@cbrl/next/server'
 import { Search } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -26,9 +26,9 @@ type SearchParams = Promise<ListingFilters>
 
 export default async function ListingPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams
-  const result = await readBackend('published properties', () =>
-    listProperties({ status: 'published' }),
-  )
+  const result = await readBackend(() => listProperties({ status: 'published' }), {
+    label: 'published properties',
+  })
   const all = result.ok ? result.data : []
   const filtered = applyFilters(all, sp)
   const neighborhoods = Array.from(new Set(all.map((p) => p.neighborhood))).sort()
