@@ -11,10 +11,28 @@ const inter = Inter({
   display: 'swap',
 })
 
+const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
+
 export const metadata: Metadata = {
+  metadataBase: new URL(productionHost ? `https://${productionHost}` : 'http://localhost:3000'),
   title: 'Imovil — alugue seu próximo lugar',
   description:
     'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
+  applicationName: 'Imovil',
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'Imovil',
+    title: 'Imovil — alugue seu próximo lugar',
+    description:
+      'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Imovil — alugue seu próximo lugar',
+    description:
+      'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
+  },
 }
 
 export const viewport: Viewport = {
