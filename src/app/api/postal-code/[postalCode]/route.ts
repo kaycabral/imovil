@@ -13,8 +13,6 @@ const FAILURES = {
   upstream: { error: 'Falha na consulta do endereço.', status: 502 },
 } as const
 
-export const revalidate = 604800
-
 export async function GET(req: Request, { params }: { params: Promise<{ postalCode: string }> }) {
   const ip = clientIp(req)
   const rate = limiter.check(`postal:${ip}`)

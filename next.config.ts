@@ -10,6 +10,8 @@ const isLocalSupabase = supabaseUrl?.protocol === 'http:'
 const supabaseOrigin = supabaseUrl ? supabaseUrl.origin : 'https://*.supabase.co'
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
   typedRoutes: true,
   // Served by /api/health so a smoke test can check which commit is live.
   env: { NEXT_PUBLIC_COMMIT_SHA: commitSha() },

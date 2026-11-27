@@ -5,6 +5,11 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Topbar } from './_components/topbar'
 
+// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
+// Remove this opt-out after verifying the segment passes validation without it.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false
+
 export const metadata: Metadata = {
   title: 'Painel do corretor — Imovil',
 }
