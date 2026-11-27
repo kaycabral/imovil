@@ -1,5 +1,6 @@
 import { AutoSignIn } from '@/components/auto-sign-in'
 import { WebAnalytics } from '@/components/web-analytics'
+import { siteUrl } from '@/lib/site-url'
 import { ThemeProvider, Toaster } from '@cbrl/design'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
@@ -11,10 +12,8 @@ const inter = Inter({
   display: 'swap',
 })
 
-const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
-
 export const metadata: Metadata = {
-  metadataBase: new URL(productionHost ? `https://${productionHost}` : 'http://localhost:3000'),
+  metadataBase: siteUrl(),
   title: 'Imovil — alugue seu próximo lugar',
   description:
     'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
