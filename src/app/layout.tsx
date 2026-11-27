@@ -1,5 +1,6 @@
 import { AutoSignIn } from '@/components/auto-sign-in'
 import { WebAnalytics } from '@/components/web-analytics'
+import { siteUrl } from '@/lib/site-url'
 import { ThemeProvider, Toaster } from '@cbrl/design'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
@@ -12,9 +13,25 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: 'Imovil — alugue seu próximo lugar',
   description:
     'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
+  applicationName: 'Imovil',
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    siteName: 'Imovil',
+    title: 'Imovil — alugue seu próximo lugar',
+    description:
+      'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Imovil — alugue seu próximo lugar',
+    description:
+      'Aluguel de imóveis com tudo o que importa no topo: preço total, bairro, distância e pet.',
+  },
 }
 
 export const viewport: Viewport = {

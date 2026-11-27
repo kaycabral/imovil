@@ -15,6 +15,6 @@ export const config = {
   // Every page and route handler (session refresh), skipping static assets and
   // the CSP report endpoint (browsers post reports without credentials).
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/csp-report|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/csp-report|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|webmanifest)$).*)',
   ],
 }
