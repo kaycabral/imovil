@@ -3,6 +3,7 @@ import { getServerUser } from '@/lib/auth/server'
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { connection } from 'next/server'
 import { Topbar } from './_components/topbar'
 
 // @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Everything below is per request (session): say so before the backend reads.
+  await connection()
   const user = await getServerUser()
   if (!user) {
     const next = (await headers()).get('x-pathname') ?? '/painel'

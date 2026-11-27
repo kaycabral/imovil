@@ -13,4 +13,9 @@ export default [
     ignores: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
     rules: { 'no-console': 'error' },
   },
+  // E2E helpers that assert on their own (e2e/*.ts).
+  {
+    files: ['**/*.spec.ts'],
+    rules: { 'playwright/expect-expect': ['error', { assertFunctionNames: ['expectNotFound'] }] },
+  },
 ]

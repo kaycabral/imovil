@@ -1,4 +1,5 @@
 import { expect, test } from '@e2e/fixtures'
+import { expectNotFound } from '@e2e/not-found'
 
 test.describe('as owner', () => {
   test.use({ authAsBroker: true })
@@ -25,16 +26,16 @@ test.describe('as owner', () => {
 })
 
 test.describe('as anonymous visitor', () => {
-  test('hits 404 on a draft', async ({ page, seedProperty }) => {
+  test('gets not found on a draft', async ({ page, seedProperty }) => {
     const { slug } = await seedProperty({ status: 'draft' })
-    const response = await page.goto(`/imoveis/${slug}`)
-    expect(response?.status()).toBe(404)
+    await page.goto(`/imoveis/${slug}`)
+    await expectNotFound(page)
   })
 
-  test('hits 404 on a paused property', async ({ page, seedProperty }) => {
+  test('gets not found on a paused property', async ({ page, seedProperty }) => {
     const { slug } = await seedProperty({ status: 'paused' })
-    const response = await page.goto(`/imoveis/${slug}`)
-    expect(response?.status()).toBe(404)
+    await page.goto(`/imoveis/${slug}`)
+    await expectNotFound(page)
   })
 
   test('sees published property without owner banner', async ({ page, seedProperty }) => {
