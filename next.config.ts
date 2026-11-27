@@ -11,6 +11,14 @@ const supabaseOrigin = supabaseUrl ? supabaseUrl.origin : 'https://*.supabase.co
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  turbopack: {
+    rules: {
+      '*.css': {
+        loaders: ['@tailwindcss/turbopack'],
+        as: '*.css',
+      },
+    },
+  },
   // Served by /api/health so a smoke test can check which commit is live.
   env: { NEXT_PUBLIC_COMMIT_SHA: commitSha() },
   // 127.0.0.1 (Playwright), <hostname>.local and the machine's LAN IPv4s.
