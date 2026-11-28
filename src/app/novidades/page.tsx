@@ -8,13 +8,9 @@ import { readBackend } from '@cbrl/next/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { connection } from 'next/server'
+import { Suspense } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-
-// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
-// Remove this opt-out after verifying the segment passes validation without it.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false
 
 export const metadata: Metadata = {
   title: 'Novidades — Imovil',
@@ -48,9 +44,40 @@ function formatDate(iso: string | null): string {
   })
 }
 
-export default async function NovidadesPage() {
+// Read per request, behind Suspense: the header of the page is the static shell.
+async function ReleaseList() {
   const releases = await getReleases()
+  if (releases.length === 0) {
+    return (
+      <p className="text-muted-foreground text-sm">
+        Nenhuma versão publicada ainda. Volte em breve 🙂
+      </p>
+    )
+  }
+  return (
+    <ol className="space-y-20">
+      {releases.map((release) => (
+        <li key={release.tagName}>
+          <header className="mb-4">
+            <time
+              className="text-muted-foreground text-sm font-medium"
+              dateTime={release.publishedAt ?? undefined}
+            >
+              {formatDate(release.publishedAt)}
+            </time>
+          </header>
+          <div className="prose prose-base dark:prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-h3:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-p:leading-relaxed prose-p:text-foreground/85 prose-strong:text-foreground max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {extractUserFacing(release.body)}
+            </ReactMarkdown>
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
+}
 
+export default function NovidadesPage() {
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <Header>
@@ -69,31 +96,9 @@ export default async function NovidadesPage() {
         </header>
 
         <div className="mx-auto mt-16 max-w-3xl">
-          {releases.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              Nenhuma versão publicada ainda. Volte em breve 🙂
-            </p>
-          ) : (
-            <ol className="space-y-20">
-              {releases.map((release) => (
-                <li key={release.tagName}>
-                  <header className="mb-4">
-                    <time
-                      className="text-muted-foreground text-sm font-medium"
-                      dateTime={release.publishedAt ?? undefined}
-                    >
-                      {formatDate(release.publishedAt)}
-                    </time>
-                  </header>
-                  <div className="prose prose-base dark:prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-h3:mt-8 prose-h3:text-xl prose-h3:font-semibold prose-p:leading-relaxed prose-p:text-foreground/85 prose-strong:text-foreground max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {extractUserFacing(release.body)}
-                    </ReactMarkdown>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
+          <Suspense fallback={null}>
+            <ReleaseList />
+          </Suspense>
 
           <p className="text-muted-foreground mt-20 text-sm">
             <Link href={'/'} className="hover:text-foreground underline">

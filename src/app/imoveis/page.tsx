@@ -16,11 +16,6 @@ import { FilterBar } from './_components/filter-bar'
 import { PropertyCard } from './_components/property-card'
 import { applyFilters, type ListingFilters } from './_data/filters'
 
-// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
-// Remove this opt-out after verifying the segment passes validation without it.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false
-
 export const metadata: Metadata = {
   title: 'Alugue em Manaus — Imovil',
   description:
@@ -29,16 +24,9 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<ListingFilters>
 
-export default async function ListingPage({ searchParams }: { searchParams: SearchParams }) {
-  const sp = await searchParams
-  const result = await readBackend(() => listProperties({ status: 'published' }), {
-    label: 'published properties',
-  })
-  const all = result.ok ? result.data : []
-  const filtered = applyFilters(all, sp)
-  const neighborhoods = Array.from(new Set(all.map((p) => p.neighborhood))).sort()
-  const kinds = Array.from(new Set(all.map((p) => p.kind)))
-
+// The chrome and hero are the static shell; the listing depends on the request
+// (filters in `searchParams`, published properties read per request).
+export default function ListingPage({ searchParams }: { searchParams: SearchParams }) {
   return (
     <main className="bg-background text-foreground flex min-h-screen flex-col">
       <Header>
@@ -47,15 +35,26 @@ export default async function ListingPage({ searchParams }: { searchParams: Sear
       </Header>
       <Container width="wide" className="flex-1 px-4 py-5 md:px-6 md:py-8">
         <Hero />
-        {result.ok ? (
-          <Listing all={all} filtered={filtered} neighborhoods={neighborhoods} kinds={kinds} />
-        ) : (
-          <BackendUnavailable />
-        )}
+        <Suspense fallback={null}>
+          <PublishedListing searchParams={searchParams} />
+        </Suspense>
       </Container>
       <Footer />
     </main>
   )
+}
+
+async function PublishedListing({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams
+  const result = await readBackend(() => listProperties({ status: 'published' }), {
+    label: 'published properties',
+  })
+  if (!result.ok) return <BackendUnavailable />
+  const all = result.data
+  const filtered = applyFilters(all, sp)
+  const neighborhoods = Array.from(new Set(all.map((p) => p.neighborhood))).sort()
+  const kinds = Array.from(new Set(all.map((p) => p.kind)))
+  return <Listing all={all} filtered={filtered} neighborhoods={neighborhoods} kinds={kinds} />
 }
 
 type ListingProps = {
