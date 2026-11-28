@@ -9,11 +9,6 @@ import { FilterChip, FilterChipRow } from '../_components/filter-chip'
 import { PageHeader } from '../_components/page-header'
 import { countByStatus, leadStatusLabel, listLeads, type LeadStatus } from '../_data/leads'
 
-// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
-// Remove this opt-out after verifying the segment passes validation without it.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false
-
 const statusOrder: LeadStatus[] = ['novo', 'em-contato', 'visita-agendada', 'fechado', 'descartado']
 
 function isLeadStatus(value: string | undefined): value is LeadStatus {
