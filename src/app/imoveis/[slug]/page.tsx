@@ -15,15 +15,10 @@ import { Car, MapPin, Package, PawPrint } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { cache } from 'react'
+import { cache, Suspense } from 'react'
 import { Broker } from './_components/broker'
 import { Gallery } from './_components/gallery'
 import { PropertyMap } from './_components/property-map'
-
-// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
-// Remove this opt-out after verifying the segment passes validation without it.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false
 
 type PageProps = { params: Promise<{ slug: string }> }
 
@@ -49,10 +44,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function PropertyPage({ params }: PageProps) {
+// Header and footer are the static shell; everything that depends on the slug
+// or the viewer streams in behind Suspense.
+export default function PropertyPage({ params }: PageProps) {
+  return (
+    <main className="bg-background text-foreground flex min-h-screen flex-col">
+      <Header>
+        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
+        <AppMenu />
+      </Header>
+      <Suspense fallback={<div className="flex-1" />}>
+        <PropertyContent params={params} />
+      </Suspense>
+      <Footer />
+    </main>
+  )
+}
+
+async function PropertyContent({ params }: PageProps) {
   const { slug } = await params
   const result = await loadProperty(slug)
-  if (!result.ok) return <UnavailablePage />
+  if (!result.ok) return <UnavailableContent />
   const property = result.data
   if (!property) notFound()
 
@@ -67,11 +79,7 @@ export default async function PropertyPage({ params }: PageProps) {
   const broker = brokerRead.ok ? brokerRead.data : null
 
   return (
-    <main className="bg-background text-foreground flex min-h-screen flex-col">
-      <Header>
-        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
-        <AppMenu />
-      </Header>
+    <>
       {showOwnerStatusNotice && <OwnerStatusBanner status={property.status} />}
       <Container as="article" className="flex-1 p-5 md:p-8">
         <Breadcrumbs property={property} />
@@ -94,23 +102,15 @@ export default async function PropertyPage({ params }: PageProps) {
           </aside>
         </div>
       </Container>
-      <Footer />
-    </main>
+    </>
   )
 }
 
-function UnavailablePage() {
+function UnavailableContent() {
   return (
-    <main className="bg-background text-foreground flex min-h-screen flex-col">
-      <Header>
-        <BrandLink className="text-base font-bold tracking-tight md:text-lg">Imovil</BrandLink>
-        <AppMenu />
-      </Header>
-      <Container className="flex-1 p-5 md:p-8">
-        <BackendUnavailable title="Não conseguimos carregar este imóvel agora" />
-      </Container>
-      <Footer />
-    </main>
+    <Container className="flex-1 p-5 md:p-8">
+      <BackendUnavailable title="Não conseguimos carregar este imóvel agora" />
+    </Container>
   )
 }
 
