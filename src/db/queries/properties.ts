@@ -59,6 +59,22 @@ export async function getPropertyBySlug(slug: string): Promise<Property | null> 
   return row ? toProperty(row) : null
 }
 
+/**
+ * Just enough to decide visibility before rendering (status + owner), without
+ * loading the listing. Used by `proxy.ts` to answer a real 404.
+ */
+export async function getPropertyVisibility(
+  slug: string,
+): Promise<{ status: PropertyStatus; ownerId: string } | null> {
+  const [row] = await imovilDb
+    .db()
+    .select({ status: properties.status, ownerId: properties.ownerId })
+    .from(properties)
+    .where(eq(properties.slug, slug))
+    .limit(1)
+  return row ?? null
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Null for unknown ids — including malformed ones from a URL, which Postgres would reject. */
