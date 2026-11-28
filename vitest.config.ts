@@ -33,10 +33,10 @@ export default defineConfig({
       // this one: counting its queries here would only dilute the ratchet.
       exclude: [...coverageBase().exclude, 'src/db/**'],
       thresholds: {
-        statements: 59.59,
+        statements: 59.89,
         branches: 49.06,
-        functions: 48.96,
-        lines: 60.77,
+        functions: 48.81,
+        lines: 61.12,
         autoUpdate: true,
       },
     },

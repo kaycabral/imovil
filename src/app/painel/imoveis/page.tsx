@@ -12,11 +12,6 @@ import { FilterChip, FilterChipRow } from '../_components/filter-chip'
 import { PageHeader } from '../_components/page-header'
 import { PropertyStatusMenu } from './_components/property-status-menu'
 
-// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
-// Remove this opt-out after verifying the segment passes validation without it.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false
-
 const statusFilters: { value: 'todos' | PropertyStatus; label: string }[] = [
   { value: 'todos', label: 'Todos' },
   { value: 'published', label: 'Publicados' },

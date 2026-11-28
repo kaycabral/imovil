@@ -10,11 +10,6 @@ import { MetricCard } from './_components/metric-card'
 import { PageHeader } from './_components/page-header'
 import { countByStatus, leadStatusLabel, listLeads, type LeadStatus } from './_data/leads'
 
-// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
-// Remove this opt-out after verifying the segment passes validation without it.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false
-
 export default async function DashboardOverviewPage() {
   const user = await getServerUser()
   const features = getFeatures()
