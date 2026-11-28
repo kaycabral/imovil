@@ -1,6 +1,7 @@
-import { expect, test } from '@e2e/fixtures'
+import { test } from '@e2e/fixtures'
+import { expectNotFound } from '@e2e/not-found'
 
-test('unknown slug returns 404', async ({ page }) => {
-  const response = await page.goto('/imoveis/slug-que-nao-existe')
-  expect(response?.status()).toBe(404)
+test('unknown slug renders not found', async ({ page }) => {
+  await page.goto('/imoveis/slug-que-nao-existe')
+  await expectNotFound(page)
 })

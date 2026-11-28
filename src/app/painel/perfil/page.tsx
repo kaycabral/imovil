@@ -5,6 +5,11 @@ import type { Metadata } from 'next'
 import { PageHeader } from '../_components/page-header'
 import { ProfileForm, type ProfileFormValues } from './_components/profile-form'
 
+// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
+// Remove this opt-out after verifying the segment passes validation without it.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false
+
 export const metadata: Metadata = {
   title: 'Perfil — Imovil',
 }

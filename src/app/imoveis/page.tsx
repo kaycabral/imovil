@@ -16,6 +16,11 @@ import { FilterBar } from './_components/filter-bar'
 import { PropertyCard } from './_components/property-card'
 import { applyFilters, type ListingFilters } from './_data/filters'
 
+// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
+// Remove this opt-out after verifying the segment passes validation without it.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false
+
 export const metadata: Metadata = {
   title: 'Alugue em Manaus — Imovil',
   description:

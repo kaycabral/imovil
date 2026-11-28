@@ -7,22 +7,24 @@ import { listReleases, type Release } from '@/lib/db'
 import { readBackend } from '@cbrl/next/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
+// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
+// Remove this opt-out after verifying the segment passes validation without it.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false
 
 export const metadata: Metadata = {
   title: 'Novidades — Imovil',
   description: 'O que chegou de novo no Imovil em cada versão.',
 }
 
-// Revalidate hourly — releases are rare and the read is cheap.
-export const revalidate = 3600
-
 async function getReleases(): Promise<Release[]> {
-  // The production build has no database env (Vercel injects it at runtime
-  // too, but the static export must not depend on it). Skip the read at build
-  // time; ISR (`revalidate`) populates the page on the first runtime request.
-  if (process.env.NEXT_PHASE === 'phase-production-build') return []
+  // Read per request: the build has no database env, so the list must not be
+  // baked into the prerendered shell.
+  await connection()
   // Database unavailable (env not configured, project paused, stack off) —
   // fall back to empty so the page still renders instead of 500-ing or hanging.
   const result = await readBackend(() => listReleases(30), { label: 'changelog' })

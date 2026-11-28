@@ -20,6 +20,11 @@ import { Broker } from './_components/broker'
 import { Gallery } from './_components/gallery'
 import { PropertyMap } from './_components/property-map'
 
+// @next-codemod-ignore Cache Components adoption: this segment temporarily allows blocking.
+// Remove this opt-out after verifying the segment passes validation without it.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false
+
 type PageProps = { params: Promise<{ slug: string }> }
 
 // Shared by generateMetadata + the page so one request reads the database once.

@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { BrandMark } from './brand-mark'
+import { CurrentYear } from './current-year'
 
 export function Footer() {
   return (
@@ -20,7 +22,13 @@ export function Footer() {
             Termos
           </Link>
         </nav>
-        <p className="tabular-nums">© {new Date().getFullYear()} · Imovil</p>
+        <p className="tabular-nums">
+          ©{' '}
+          <Suspense>
+            <CurrentYear />
+          </Suspense>{' '}
+          · Imovil
+        </p>
       </div>
     </footer>
   )

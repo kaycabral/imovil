@@ -10,6 +10,8 @@ const isLocalSupabase = supabaseUrl?.protocol === 'http:'
 const supabaseOrigin = supabaseUrl ? supabaseUrl.origin : 'https://*.supabase.co'
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  partialPrefetching: true,
   typedRoutes: true,
   turbopack: {
     rules: {
