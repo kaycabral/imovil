@@ -1,11 +1,12 @@
 import { expect, type Page } from '@playwright/test'
 
 /**
- * Assert the page rendered Next's not-found UI. With Cache Components the
- * prerendered shell streams first, so a request-time `notFound()` cannot turn
- * the status into 404: Next keeps 200 and marks the page `noindex` instead.
+ * Open `path` and assert a real 404 with Next's not-found UI. `proxy.ts`
+ * answers it before the prerendered shell streams, so the status is not stuck
+ * at 200.
  */
-export async function expectNotFound(page: Page): Promise<void> {
+export async function expectNotFound(page: Page, path: string): Promise<void> {
+  const response = await page.goto(path)
+  expect(response?.status()).toBe(404)
   await expect(page.getByText('This page could not be found.')).toBeVisible()
-  await expect(page.locator('meta[name="robots"][content*="noindex"]')).toHaveCount(1)
 }
