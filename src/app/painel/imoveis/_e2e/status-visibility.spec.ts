@@ -28,14 +28,12 @@ test.describe('as owner', () => {
 test.describe('as anonymous visitor', () => {
   test('gets not found on a draft', async ({ page, seedProperty }) => {
     const { slug } = await seedProperty({ status: 'draft' })
-    await page.goto(`/imoveis/${slug}`)
-    await expectNotFound(page)
+    await expectNotFound(page, `/imoveis/${slug}`)
   })
 
   test('gets not found on a paused property', async ({ page, seedProperty }) => {
     const { slug } = await seedProperty({ status: 'paused' })
-    await page.goto(`/imoveis/${slug}`)
-    await expectNotFound(page)
+    await expectNotFound(page, `/imoveis/${slug}`)
   })
 
   test('sees published property without owner banner', async ({ page, seedProperty }) => {

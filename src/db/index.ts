@@ -4,6 +4,7 @@ export { getProfile, updateProfileContact, type Profile } from './queries/profil
 export {
   getPropertyById,
   getPropertyBySlug,
+  getPropertyVisibility,
   insertProperty,
   listProperties,
   setPropertyStatus,
